@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  name: headless
+spec:
+  destination:
+    name: ''
+    namespace: neo4j
+    server: 'https://kubernetes.default.svc'
+  source:
+    path: ''
+    repoURL: 'https://helm.neo4j.com/neo4j'
+    targetRevision: 5.17.0
+    chart: neo4j-headless-service
+    helm:
+      parameters:
+        - name: neo4j.name
+          value: neo4j
+  sources: []
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

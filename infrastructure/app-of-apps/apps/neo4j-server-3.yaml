@@ -1,0 +1,58 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  name: server-3
+spec:
+  destination:
+    name: ''
+    namespace: neo4j
+    server: 'https://kubernetes.default.svc'
+  source:
+    path: ''
+    repoURL: 'https://neo4j.github.io/helm-charts'
+    targetRevision: 5.17.0
+    chart: neo4j
+    helm:
+      values: |-
+        disableLookups: true
+
+        fullnameOverride: 'server-3'
+
+        services:
+          neo4j:
+            enabled: false
+
+        neo4j:
+          name: "neo4j"
+          minimumClusterSize: 3
+          resources:
+            cpu: "0.5"
+            memory: "2Gi"
+          passwordFromSecret: "neo4j-auth"
+          edition: "enterprise"
+          acceptLicenseAgreement: "yes"
+
+        env:
+          NEO4J_PLUGINS: '["apoc"]'
+
+        config:
+          dbms.databases.seed_from_uri_providers: "URLConnectionSeedProvider"
+          dbms.security.procedures.unrestricted: "apoc.*"
+
+        ### Local Deployment
+        volumes:
+          data:
+            mode: defaultStorageClass
+            defaultStorageClass:
+              requests:
+                storage: 2Gi
+  sources: []
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
