@@ -9,7 +9,7 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/GBrunelli/distributed-sysyem
+    repoURL: https://github.com/GBrunelli/distributed-system
     targetRevision: HEAD
     path: ./infrastructure/modules/kafka
 
