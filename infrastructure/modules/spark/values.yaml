@@ -1,5 +1,24 @@
 image:
- registry: docker.io
- repository: bitnami/spark
- tag: 3.2.0
- digest: ""
+  registry: docker.io
+  repository: bitnami/spark
+  tag: 3.2.0
+  digest: ""
+
+master:
+  replicaCount: 1
+  webPort: 8080
+  image:
+    registry: docker.io
+    repository: bitnami/spark
+    tag: 3.2.0
+
+worker:
+  replicaCount: 2
+  webPort: 8081
+  image:
+    registry: docker.io
+    repository: bitnami/spark
+    tag: 3.2.0
+
+persistence:
+  enabled: false

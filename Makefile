@@ -16,8 +16,6 @@ start-argocd:
 	sleep 5s
 	kubectl wait --for=condition=ready --timeout=300s pod -l app.kubernetes.io/name=argocd-server -n argocd
 
-	kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
-
 start-apps:
 	kubectl create namespace neo4j
 	kubectl create secret generic neo4j-auth --namespace=neo4j --from-literal=NEO4J_AUTH=neo4j/bmVvNGo6bXlwYXNzd29yZA==
@@ -31,9 +29,12 @@ forward-ports:
 	@echo "Forwarding Ports..."
 
 	kubectl -n argocd port-forward svc/argo-cd-argocd-server 8080:443
-	
+
+get-info:
+	kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo	
+
 # Targets
-up: start-kind start-argocd start-apps
+up: start-kind start-argocd start-apps get-info
 down: stop-kind
 
 .PHONY: up down start-kind start-argocd start-apps start-kafka forward-ports stop-kind
