@@ -19,6 +19,7 @@ start-argocd:
 	kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 
 start-apps:
+	kubectl create namespace neo4j
 	kubectl create secret generic neo4j-auth --namespace=neo4j --from-literal=NEO4J_AUTH=neo4j/bmVvNGo6bXlwYXNzd29yZA==
 	kubectl apply -f infrastructure/app-of-apps/local/argo-cd.yaml
 
