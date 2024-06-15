@@ -33,7 +33,7 @@ forward-ports:
 	kubectl -n argocd port-forward svc/argo-cd-argocd-server 8080:443
 	
 # Targets
-up: start-kind start-argocd
+up: start-kind start-argocd start-apps
 down: stop-kind
 
 .PHONY: up down start-kind start-argocd start-apps start-kafka forward-ports stop-kind

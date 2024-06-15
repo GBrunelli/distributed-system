@@ -1,41 +1,22 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: argocd
+  name: app-of-apps
   namespace: argocd
-  labels:
-    name: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
 spec:
-  project: default
-
-  source:
-    repoURL: https://github.com/GBrunelli/distributed-system
-    targetRevision: HEAD
-    path: infrastructure/modules/argo-cd
-    helm:
-      values: |
-        argocd-apps:
-          applications:
-            - name: app-of-apps
-              project: default
-              namespace: argocd
-              destination:
-                name: in-cluster
-                namespace: argocd
-              source:
-                repoURL: https://github.com/GBrunelli/distributed-system
-                path: infrastructure/app-of-apps/apps
-                targetRevision: main
-              syncPolicy:
-                automated:
-                  prune: true
-                  selfHeal: true
-
-  destination:
-    name: in-cluster
-    namespace: argocd
-
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: infrastructure/app-of-apps/apps
+    repoURL: https://github.com/GBrunelli/distributed-system
+    targetRevision: HEAD
