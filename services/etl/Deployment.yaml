@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: etl-deployment
-  namespace: categories
+  namespace: etl
 spec:
   replicas: 1
   selector:

@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: etl-pipeline
+  name: etl
   namespace: argocd
   labels:
-    name: meetup-categories
+    name: etl
 spec:
   project: default
 
@@ -15,7 +15,7 @@ spec:
     
   destination:
     name: in-cluster
-    namespace: categories
+    namespace: etl
 
   syncPolicy:
     automated:
