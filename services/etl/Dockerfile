@@ -2,7 +2,7 @@
 FROM python:3.9-slim
 
 # Install necessary Python packages
-RUN pip install pandas openpyxl neo4j
+RUN pip install pandas openpyxl neo4j xlrd
 
 # Copy the Python script
 COPY upload_to_neo4j.py /app/upload_to_neo4j.py
