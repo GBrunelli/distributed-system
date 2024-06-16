@@ -1,10 +1,10 @@
-kafka:
-  persistence:
-    enabled: false
-
-  zookeeper:
+zookeeper:
+  enabled: true
     persistence:
       enabled: false
+
+persistence:
+    enabled: false
 
 provisioning:
   enabled: true
