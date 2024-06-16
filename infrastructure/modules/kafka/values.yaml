@@ -1,4 +1,5 @@
 zookeeper:
+  replicaCount: 3
   enabled: true
   persistence:
     enabled: false
@@ -8,6 +9,10 @@ persistence:
 
 kraft:
   enabled: false
+
+extraEnvVars:
+  - name: KAFKA_ENABLE_KRAFT
+    value: "false"
 
 provisioning:
   enabled: true
