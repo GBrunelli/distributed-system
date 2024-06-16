@@ -1,6 +1,5 @@
 import pandas as pd
 from neo4j import GraphDatabase
-import base64
 import logging
 
 # Configure logging
@@ -10,7 +9,7 @@ logger = logging.getLogger(__name__)
 # Define Neo4j connection details
 neo4j_uri = "neo4j://neo4j-headless.neo4j.svc.cluster.local:7687"
 neo4j_user = "neo4j"
-neo4j_password = base64.b64decode("bmVvNGo6bXlwYXNzd29yZA==").decode('utf-8')
+neo4j_password = "bmVvNGo6bXlwYXNzd29yZA=="
 
 # Function to create Neo4j driver
 def get_neo4j_driver(uri, user, password):
