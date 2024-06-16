@@ -1,12 +1,9 @@
 provisioning:
-  automountServiceAccountToken: true
-  serviceAccount:
-    create: true
   enabled: true
   topics:
     - name: request
       partitions: 1
-      replicationFactor: 3
+      replicationFactor: 1
     - name: response
       partitions: 1
-      replicationFactor: 3
+      replicationFactor: 
