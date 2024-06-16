@@ -1,13 +1,14 @@
 import pandas as pd
 from neo4j import GraphDatabase
 import logging
+import math
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Define Neo4j connection details
-neo4j_uri = "neo4j://localhost:7687"
+neo4j_uri = "neo4j://neo4j-headless.neo4j.svc.cluster.local:7687"
 neo4j_user = "neo4j"
 neo4j_password = "bmVvNGo6bXlwYXNzd29yZA=="
 
@@ -22,45 +23,51 @@ def get_neo4j_driver(uri, user, password):
         raise
 
 # Function to create Laboratory nodes in Neo4j
-def create_laboratory_nodes(tx, laboratories):
+def create_laboratory_nodes(session, laboratories):
     query = """
-    UNWIND $laboratories AS lab
     CALL {
+        UNWIND $laboratories AS lab
         MERGE (l:Laboratory {CNPJ: lab.CNPJ})
         ON CREATE SET l.name = lab.LABORATÓRIO
     } IN TRANSACTIONS
     """
-    tx.run(query, laboratories=laboratories)
+    session.run(query, laboratories=laboratories)
 
 # Function to create Medicine nodes and relationships in Neo4j
-def create_medicine_nodes(tx, medicines):
+def create_medicine_nodes(session, medicines):
     query = """
-    UNWIND $medicines AS med
     CALL {
+        UNWIND $medicines AS med
         MERGE (l:Laboratory {CNPJ: med.CNPJ})
         CREATE (m:Medicine)
         SET m = med
         MERGE (m)-[:PRODUCED_BY]->(l)
     } IN TRANSACTIONS
     """
-    tx.run(query, medicines=medicines)
+    session.run(query, medicines=medicines)
 
-# Function to run Neo4j transactions for laboratories
-def run_neo4j_lab_transactions(laboratories):
+# Function to run Neo4j transactions for laboratories in batches
+def run_neo4j_lab_transactions(laboratories, batch_size=100):
     driver = get_neo4j_driver(neo4j_uri, neo4j_user, neo4j_password)
+    total_batches = math.ceil(len(laboratories) / batch_size)
     with driver.session() as session:
-        session.write_transaction(create_laboratory_nodes, laboratories)
+        for i in range(total_batches):
+            batch = laboratories[i * batch_size: (i + 1) * batch_size]
+            create_laboratory_nodes(session, batch)
     logger.info("Successfully created laboratory nodes in Neo4j.")
 
-# Function to run Neo4j transactions for medicines
-def run_neo4j_med_transactions(medicines):
+# Function to run Neo4j transactions for medicines in batches
+def run_neo4j_med_transactions(medicines, batch_size=100):
     driver = get_neo4j_driver(neo4j_uri, neo4j_user, neo4j_password)
+    total_batches = math.ceil(len(medicines) / batch_size)
     with driver.session() as session:
-        session.write_transaction(create_medicine_nodes, medicines)
+        for i in range(total_batches):
+            batch = medicines[i * batch_size: (i + 1) * batch_size]
+            create_medicine_nodes(session, batch)
     logger.info("Successfully created medicine nodes and relationships in Neo4j.")
 
 # Read XLS file into a DataFrame
-xls_file_path = "xls_conformidade_site_20240604_162827951.xls"
+xls_file_path = "/app/xls_conformidade_site_20240604_162827951.xls"
 try:
     df = pd.read_excel(xls_file_path, skiprows=41)  # Skip the first 41 rows
     df.columns = df.columns.str.strip()  # Strip any leading/trailing spaces from column names
@@ -99,10 +106,10 @@ unique_laboratories = df[['CNPJ', 'LABORATÓRIO']].drop_duplicates().to_dict('re
 # Convert DataFrame rows to a list of dictionaries for medicines
 medicines = df.to_dict('records')
 
-# Run the transactions
+# Run the transactions in batches
 try:
-    run_neo4j_lab_transactions(unique_laboratories)
-    run_neo4j_med_transactions(medicines)
+    run_neo4j_lab_transactions(unique_laboratories, batch_size=100)
+    run_neo4j_med_transactions(medicines, batch_size=100)
     logger.info("Data uploaded to Neo4j successfully!")
 except Exception as e:
     logger.error(f"Error uploading data to Neo4j: {e}")
