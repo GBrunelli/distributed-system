@@ -6,6 +6,17 @@ metadata:
 spec:
   template:
     spec:
+      initContainers:
+      - name: wait-for-deployment
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          while [[ $(kubectl get deploy server-1-0 -n neo4j -o jsonpath='{.status.conditions[?(@.type=="Available")].status}') != "True" ]]; do
+            echo "Waiting for deployment to be ready..."
+            sleep 5
+          done
       containers:
       - name: neo4j-uploader
         image: gbrunelli/neo4j_uploader:latest
