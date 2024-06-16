@@ -21,36 +21,75 @@ def get_neo4j_driver(uri, user, password):
         logger.error(f"Error creating Neo4j driver: {e}")
         raise
 
-# Function to create nodes in Neo4j
-def create_nodes(tx, rows):
+# Function to create Laboratory nodes in Neo4j
+def create_laboratory_nodes(tx, laboratories):
     query = """
-    UNWIND $rows AS row
-    CREATE (n:YourLabe)
+    UNWIND $labratories AS labo
+    MERGE (l:Laboratory {CNPJ: lab.CNPJ})
+    ON CREATE SET l.name = lab.LABORATÓRIO
     """
-    tx.run(query, rows=rows)
+    tx.run(query, laboratories=laboratories)
 
-# Function to run Neo4j transactions
-def run_neo4j_transactions(rows):
+# Function to create Medicine nodes and relationships in Neo4j
+def create_medicine_nodes(tx, medicines):
+    query = """
+    UNWIND $medicines AS med
+    MERGE (l:Laboratory {CNPJ: med.CNPJ})
+    CREATE (m:Medicine)
+    SET m = med
+    MERGE (m)-[:PRODUCED_BY]->(l)
+    """
+    tx.run(query, medicines=medicines)
+
+# Function to run Neo4j transactions for laboratories
+def run_neo4j_lab_transactions(laboratories):
     driver = get_neo4j_driver(neo4j_uri, neo4j_user, neo4j_password)
     with driver.session() as session:
-        session.write_transaction(create_nodes, rows)
-    logger.info("Successfully ran Neo4j transactions.")
+        session.write_transaction(create_laboratory_nodes, laboratories)
+    logger.info("Successfully created laboratory nodes in Neo4j.")
+
+# Function to run Neo4j transactions for medicines
+def run_neo4j_med_transactions(medicines):
+    driver = get_neo4j_driver(neo4j_uri, neo4j_user, neo4j_password)
+    with driver.session() as session:
+        session.write_transaction(create_medicine_nodes, medicines)
+    logger.info("Successfully created medicine nodes and relationships in Neo4j.")
 
 # Read XLS file into a DataFrame
 xls_file_path = "/app/xls_conformidade_site_20240604_162827951.xls"
 try:
-    df = pd.read_excel(xls_file_path)
+    df = pd.read_excel(xls_file_path, skiprows=41)  # Skip the first 41 rows
     logger.info("Successfully read XLS file into DataFrame.")
 except Exception as e:
     logger.error(f"Error reading XLS file: {e}")
     raise
 
-# Convert DataFrame rows to a list of dictionaries
-rows = df.to_dict('records')
+# Specify the columns to be read
+columns = [
+    "SUBSTÂNCIA", "CNPJ", "LABORATÓRIO", "CÓDIGO GGREM", "REGISTRO", "EAN 1", "EAN 2", "PRODUTO",
+    "APRESENTAÇÃO", "CLASSE TERAPÊUTICA", "TIPO DE PRODUTO (STATUS DO PRODUTO)", "REGIME DE PREÇO",
+    "PF Sem Impostos", "PF 0%", "PF 12%", "PF 12% ALC", "PF 17%", "PF 17% ALC", "PF 17,5%", 
+    "PF 17,5% ALC", "PF 18%", "PF 18% ALC", "PF 19%", "PF 19% ALC", "PF 19,5%", "PF 19,5% ALC",
+    "PF 20%", "PF 20% ALC", "PF 20,5%", "PF 21%", "PF 21% ALC", "PF 22%", "PF 22% ALC",
+    "PMC Sem Imposto", "PMC 0%", "PMC 12%", "PMC 12% ALC", "PMC 17%", "PMC 17% ALC", "PMC 17,5%",
+    "PMC 17,5% ALC", "PMC 18%", "PMC 18% ALC", "PMC 19%", "PMC 19% ALC", "PMC 19,5%", 
+    "PMC 19,5% ALC", "PMC 20%", "PMC 20% ALC", "PMC 20,5%", "PMC 21%", "PMC 21% ALC", 
+    "PMC 22%", "PMC 22% ALC", "RESTRIÇÃO HOSPITALAR", "CAP", "CONFAZ 87", "ICMS 0%",
+    "ANÁLISE RECURSAL", "LISTA DE CONCESSÃO DE CRÉDITO TRIBUTÁRIO (PIS/COFINS)",
+    "COMERCIALIZAÇÃO 2022", "TARJA", "DESTINAÇÃO COMERCIAL"
+]
+df = df[columns]
 
-# Run the transaction
+# Create list of unique laboratories
+unique_laboratories = df[['CNPJ', 'LABORATÓRIO']].drop_duplicates().to_dict('records')
+
+# Convert DataFrame rows to a list of dictionaries for medicines
+medicines = df.to_dict('records')
+
+# Run the transactions
 try:
-    run_neo4j_transactions(rows)
+    run_neo4j_lab_transactions(unique_laboratories)
+    run_neo4j_med_transactions(medicines)
     logger.info("Data uploaded to Neo4j successfully!")
 except Exception as e:
     logger.error(f"Error uploading data to Neo4j: {e}")
