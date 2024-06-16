@@ -6,6 +6,9 @@ zookeeper:
 persistence:
     enabled: false
 
+kraft:
+  enabled: false
+
 provisioning:
   enabled: true
   topics:
