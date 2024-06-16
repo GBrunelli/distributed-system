@@ -1,4 +1,6 @@
 provisioning:
+  serviceAccount:
+    create: true
   enabled: true
   topics:
     - name: request
