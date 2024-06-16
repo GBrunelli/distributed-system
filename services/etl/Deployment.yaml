@@ -7,16 +7,19 @@ spec:
   template:
     spec:
       initContainers:
-      - name: wait-for-deployment
-        image: bitnami/kubectl:latest
+      - name: wait-for-neo4j
+        image: busybox:latest
         command:
         - /bin/sh
         - -c
         - |
-          while [[ $(kubectl get deploy server-1-0 -n neo4j -o jsonpath='{.status.conditions[?(@.type=="Available")].status}') != "True" ]]; do
-            echo "Waiting for deployment to be ready..."
+          echo "Checking Neo4j service availability..."
+          until nc -z -v -w30 neo4j-headless.neo4j.svc.cluster.local 7687
+          do
+            echo "Waiting for Neo4j service to be available..."
             sleep 5
           done
+          echo "Neo4j service is available."
       containers:
       - name: neo4j-uploader
         image: gbrunelli/neo4j_uploader:latest
