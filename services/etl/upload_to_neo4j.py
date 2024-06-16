@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Define Neo4j connection details
-neo4j_uri = "neo4j://neo4j-headless.neo4j.svc.cluster.local:7687"
+neo4j_uri = "neo4j://localhost:7687"
 neo4j_user = "neo4j"
 neo4j_password = "bmVvNGo6bXlwYXNzd29yZA=="
 
@@ -24,9 +24,11 @@ def get_neo4j_driver(uri, user, password):
 # Function to create Laboratory nodes in Neo4j
 def create_laboratory_nodes(tx, laboratories):
     query = """
-    UNWIND $labratories AS labo
-    MERGE (l:Laboratory {CNPJ: lab.CNPJ})
-    ON CREATE SET l.name = lab.LABORATÓRIO
+    UNWIND $laboratories AS lab
+    CALL {
+        MERGE (l:Laboratory {CNPJ: lab.CNPJ})
+        ON CREATE SET l.name = lab.LABORATÓRIO
+    } IN TRANSACTIONS
     """
     tx.run(query, laboratories=laboratories)
 
@@ -34,10 +36,12 @@ def create_laboratory_nodes(tx, laboratories):
 def create_medicine_nodes(tx, medicines):
     query = """
     UNWIND $medicines AS med
-    MERGE (l:Laboratory {CNPJ: med.CNPJ})
-    CREATE (m:Medicine)
-    SET m = med
-    MERGE (m)-[:PRODUCED_BY]->(l)
+    CALL {
+        MERGE (l:Laboratory {CNPJ: med.CNPJ})
+        CREATE (m:Medicine)
+        SET m = med
+        MERGE (m)-[:PRODUCED_BY]->(l)
+    } IN TRANSACTIONS
     """
     tx.run(query, medicines=medicines)
 
@@ -56,9 +60,10 @@ def run_neo4j_med_transactions(medicines):
     logger.info("Successfully created medicine nodes and relationships in Neo4j.")
 
 # Read XLS file into a DataFrame
-xls_file_path = "/app/xls_conformidade_site_20240604_162827951.xls"
+xls_file_path = "xls_conformidade_site_20240604_162827951.xls"
 try:
     df = pd.read_excel(xls_file_path, skiprows=41)  # Skip the first 41 rows
+    df.columns = df.columns.str.strip()  # Strip any leading/trailing spaces from column names
     logger.info("Successfully read XLS file into DataFrame.")
 except Exception as e:
     logger.error(f"Error reading XLS file: {e}")
@@ -78,6 +83,14 @@ columns = [
     "ANÁLISE RECURSAL", "LISTA DE CONCESSÃO DE CRÉDITO TRIBUTÁRIO (PIS/COFINS)",
     "COMERCIALIZAÇÃO 2022", "TARJA", "DESTINAÇÃO COMERCIAL"
 ]
+
+# Check if all columns exist in the DataFrame, strip any leading/trailing spaces
+df.columns = df.columns.str.strip()
+missing_columns = [col for col in columns if col not in df.columns]
+if missing_columns:
+    logger.error(f"Missing columns in the DataFrame: {missing_columns}")
+    raise KeyError(f"Missing columns: {missing_columns}")
+
 df = df[columns]
 
 # Create list of unique laboratories
