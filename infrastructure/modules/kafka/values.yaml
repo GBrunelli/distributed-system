@@ -6,4 +6,4 @@ provisioning:
       replicationFactor: 1
     - name: response
       partitions: 1
-      replicationFactor: 
+      replicationFactor: 1
