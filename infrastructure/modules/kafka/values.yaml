@@ -1,7 +1,7 @@
 zookeeper:
   enabled: true
-    persistence:
-      enabled: false
+  persistence:
+    enabled: false
 
 persistence:
     enabled: false
