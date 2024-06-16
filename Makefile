@@ -21,6 +21,12 @@ start-apps:
 	kubectl create secret generic neo4j-auth --namespace=neo4j --from-literal=NEO4J_AUTH=neo4j/bmVvNGo6bXlwYXNzd29yZA==
 	kubectl apply -f infrastructure/app-of-apps/local/argo-cd.yaml
 
+IMAGE_TAG ?= latest
+
+build-images:
+	@echo "Building Images"
+	docker build -t gbrunelli/spark_neo4j:$(IMAGE_TAG) -f services/etl/Dockerfile services/etl
+
 stop-kind:
 	@echo "Stopping Kind..."
 	kind delete clusters cluster

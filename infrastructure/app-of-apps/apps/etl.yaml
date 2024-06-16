@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: etl-pipeline
+  namespace: argocd
+  labels:
+    name: meetup-categories
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/GBrunelli/distributed-system
+    targetRevision: HEAD
+    path: ./services/etl
+    
+  destination:
+    name: in-cluster
+    namespace: categories
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Validate=false
+      - CreateNamespace=true
+
+    retry:
+      limit: 10
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
