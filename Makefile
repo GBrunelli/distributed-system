@@ -26,6 +26,8 @@ build-images:
 	@echo "Building Images"
 	docker build -t gbrunelli/neo4j_uploader:latest services/etl/.
 	docker push gbrunelli/neo4j_uploader:latest
+	docker build -t gbrunelli/dist_system_ui:latest services/ui/.
+	docker push gbrunelli/dist_system_ui:latest
 
 stop-kind:
 	@echo "Stopping Kind..."

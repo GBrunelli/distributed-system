@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ui
+  namespace: argocd
+  labels:
+    name: ui
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/GBrunelli/distributed-system
+    targetRevision: HEAD
+    path: ./services/ui
+    
+  destination:
+    name: in-cluster
+    namespace: ui
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Validate=false
+      - CreateNamespace=true
+
+    retry:
+      limit: 10
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
