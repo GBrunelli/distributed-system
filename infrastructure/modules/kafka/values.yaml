@@ -1,4 +1,5 @@
 provisioning:
+  automountServiceAccountToken: true
   serviceAccount:
     create: true
   enabled: true
