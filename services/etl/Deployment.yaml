@@ -1,19 +1,12 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: etl-deployment
+  name: neo4j-uploader
   namespace: etl
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: etl
   template:
-    metadata:
-      labels:
-        app: etl
     spec:
       containers:
-        - name: etl-container
-          image: gbrunelli/spark_neo4j:latest
-          command: ["spark-submit", "/app/spark_neo4j.py"]
+      - name: neo4j-uploader
+        image: gbrunelli/neo4j_uploader:latest
+      restartPolicy: OnFailure
