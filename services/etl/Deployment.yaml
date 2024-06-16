@@ -17,12 +17,3 @@ spec:
         - name: etl-container
           image: gbrunelli/spark_neo4j:latest
           command: ["spark-submit", "/app/spark_neo4j.py"]
-          volumeMounts:
-            - name: xls-file
-              mountPath: /app/xls_conformidade_site_20240604_162827951.xls
-              subPath: xls_conformidade_site_20240604_162827951.xls
-      volumes:
-        - name: xls-file
-          hostPath:
-            path: /path/on/host/xls_conformidade_site_20240604_162827951.xls
-            type: File
