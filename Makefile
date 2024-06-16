@@ -21,11 +21,11 @@ start-apps:
 	kubectl create secret generic neo4j-auth --namespace=neo4j --from-literal=NEO4J_AUTH=neo4j/bmVvNGo6bXlwYXNzd29yZA==
 	kubectl apply -f infrastructure/app-of-apps/local/argo-cd.yaml
 
-IMAGE_TAG ?= latest
 
 build-images:
 	@echo "Building Images"
-	docker build -t gbrunelli/spark_neo4j:$(IMAGE_TAG) -f services/etl/Dockerfile services/etl
+	docker build -t gbrunelli/neo4j_uploader:latest
+	docker push gbrunelli/neo4j_uploader:latest
 
 stop-kind:
 	@echo "Stopping Kind..."
@@ -40,7 +40,7 @@ get-info:
 	kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo	
 
 # Targets
-up: start-kind start-argocd start-apps get-info
+up: build-images start-kind start-argocd start-apps get-info
 down: stop-kind
 
-.PHONY: up down start-kind start-argocd start-apps start-kafka forward-ports stop-kind
+.PHONY: up down start-kind start-argocd start-apps start-kafka forward-ports stop-kind build-images

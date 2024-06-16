@@ -2,7 +2,7 @@ import pandas as pd
 from neo4j import GraphDatabase
 
 # Define Neo4j connection details
-neo4j_uri = "neo4j://neo4j-headless.neo4j.svc.cluster.local:7687"
+neo4j_uri = "neo4j://headless-neo4j.neo4j.svc.cluster.local:7687"
 neo4j_user = "neo4j"
 neo4j_password = "bmVvNGo6bXlwYXNzd29yZA=="
 
