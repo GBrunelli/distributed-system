@@ -6,8 +6,12 @@ kafka:
     persistence:
       enabled: false
 
-kafka-topics:
-  create:
-    - name: my-topic
-      partitions: 3
+provisioning:
+  enabled: true
+  topics:
+    - name: request
+      partitions: 1
+      replicationFactor: 1
+    - name: response
+      partitions: 1
       replicationFactor: 1
