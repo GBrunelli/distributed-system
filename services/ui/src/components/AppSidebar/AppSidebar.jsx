@@ -31,7 +31,7 @@ function AppSidebar() {
             <Sidebar.Logo>
                 <Link to="/">
                     <img
-                        src="./src/assets/Horizontal.png"
+                        src="/assets/Horizontal.png"
                         alt="Logo"
                         className="w-40"
                     />
