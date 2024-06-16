@@ -1,0 +1,9 @@
+provisioning:
+  enabled: true
+  topics:
+    - name: request
+      partitions: 1
+      replicationFactor: 3
+    - name: response
+      partitions: 1
+      replicationFactor: 3
