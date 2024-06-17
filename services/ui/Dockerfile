@@ -1,35 +1,23 @@
-# Use a imagem oficial do Node.js para compilar o projeto
-FROM node:14 AS build
+# Use the official Node.js image as the base image
+FROM node:16-alpine
 
-# Defina o diretório de trabalho dentro do contêiner
+# Set the working directory in the container
 WORKDIR /app
 
-# Copie o package.json e o package-lock.json
+# Copy package.json and package-lock.json files to the container
 COPY package*.json ./
 
-# Instale as dependências do projeto
+# Install dependencies
 RUN npm install
 
-# Copie todo o código fonte para o contêiner
+# Copy the rest of the application code to the container
 COPY . .
 
-# Compile o projeto
+# Build the application
 RUN npm run build
 
-# Use uma imagem menor do Node.js para servir a aplicação
-FROM node:14-alpine
+# Expose the port that the app runs on
+EXPOSE 5173
 
-# Defina o diretório de trabalho dentro do contêiner
-WORKDIR /app
-
-# Instale o 'serve' globalmente
-RUN npm install -g serve
-
-# Copie os arquivos compilados da etapa de build
-COPY --from=build /app/dist /app/dist
-
-# Exponha a porta que o 'serve' usará
-EXPOSE 5000
-
-# Comando para rodar o 'serve'
-CMD ["serve", "-s", "/app/dist", "-l", "5000"]
+# Start the application
+CMD ["npm", "run", "preview"]
