@@ -42,7 +42,7 @@ get-info:
 	kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo	
 
 # Targets
-up: build-images start-kind start-argocd start-apps get-info
+up: start-kind start-argocd start-apps get-info
 down: stop-kind
 
 .PHONY: up down start-kind start-argocd start-apps start-kafka forward-ports stop-kind build-images
