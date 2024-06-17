@@ -22,3 +22,19 @@ spec:
         env:
         - name: NODE_ENV
           value: "production"
+          
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-app-service
+spec:
+  selector:
+    app: node-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5173
+      nodePort: 30080
+  type: NodePort
