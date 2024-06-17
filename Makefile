@@ -3,13 +3,14 @@ start-kind:
 
 start-argocd:
 	@echo "Starting ArgoCD..."
-	
+	helm add repo
 	@if [ -f "infrastructure/modules/argo-cd/charts/argo-cd-5.16.1.tgz" ]; then\
 		echo "dependencies already exists";\
 	else\
         helm dependency build ./infrastructure/modules/argo-cd;\
     fi
-
+	helm repo add argo-cd https://argoproj.github.io/argo-helm
+	helm dep update charts/argo-cd/
 	helm install argo-cd -n argocd \
 		--create-namespace ./infrastructure/modules/argo-cd
 
