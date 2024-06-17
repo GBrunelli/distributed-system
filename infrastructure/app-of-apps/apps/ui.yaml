@@ -11,7 +11,7 @@ spec:
   source:
     repoURL: https://github.com/GBrunelli/distributed-system
     targetRevision: HEAD
-    path: ./services/ui
+    path: ./services/ui/k8s
     
   destination:
     name: in-cluster
