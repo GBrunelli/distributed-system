@@ -18,11 +18,11 @@ spec:
       - name: node-app
         image: gbrunelli/dist_system_ui:latest
         ports:
-        - containerPort: 5173
+        - containerPort: 5000
         env:
         - name: NODE_ENV
           value: "production"
-          
+
 ---
 
 apiVersion: v1
@@ -35,6 +35,6 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 5173
+      targetPort: 5000
       nodePort: 30080
   type: NodePort
