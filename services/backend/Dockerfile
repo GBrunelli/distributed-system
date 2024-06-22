@@ -13,7 +13,7 @@ RUN npm install
 COPY . .
 
 # Exponha a porta que o app usará
-EXPOSE 5000
+EXPOSE 3000
 
 # Comando para rodar o app
 CMD ["node", "server.js"]
