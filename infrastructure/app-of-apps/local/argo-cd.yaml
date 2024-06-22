@@ -20,10 +20,3 @@ spec:
         path: infrastructure/app-of-apps/apps
         repoURL: https://github.com/GBrunelli/distributed-system
         targetRevision: HEAD
-    resources:
-        requests:
-            memory: "1Gi"
-            cpu: "500m"
-        limits:
-            memory: "2Gi"
-            cpu: "1"
