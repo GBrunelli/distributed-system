@@ -1,13 +1,57 @@
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
-- role: control-plane
-  extraPortMappings:
-  - containerPort: 30080
-    hostPort: 30080
-    protocol: TCP
-- role: worker
-- role: worker
-- role: worker
-- role: worker
-- role: worker
+    - role: control-plane
+      extraPortMappings:
+          - containerPort: 30080
+            hostPort: 30080
+            protocol: TCP
+      kubeadmConfigPatches:
+          - |
+              kind: InitConfiguration
+              nodeRegistration:
+                kubeletExtraArgs:
+                  "eviction-hard": "memory.available<200Mi,nodefs.available<1Gi,imagefs.available<1Gi"
+                  "kube-reserved": "cpu=100m,memory=128Mi"
+                  "system-reserved": "cpu=100m,memory=128Mi"
+                  "enforce-node-allocatable": "pods"
+    - role: worker
+      kubeadmConfigPatches:
+          - |
+              kind: JoinConfiguration
+              nodeRegistration:
+                kubeletExtraArgs:
+                  "eviction-hard": "memory.available<200Mi,nodefs.available<1Gi,imagefs.available<1Gi"
+                  "kube-reserved": "cpu=100m,memory=128Mi"
+                  "system-reserved": "cpu=100m,memory=128Mi"
+                  "enforce-node-allocatable": "pods"
+    - role: worker
+      kubeadmConfigPatches:
+          - |
+              kind: JoinConfiguration
+              nodeRegistration:
+                kubeletExtraArgs:
+                  "eviction-hard": "memory.available<200Mi,nodefs.available<1Gi,imagefs.available<1Gi"
+                  "kube-reserved": "cpu=100m,memory=128Mi"
+                  "system-reserved": "cpu=100m,memory=128Mi"
+                  "enforce-node-allocatable": "pods"
+    - role: worker
+      kubeadmConfigPatches:
+          - |
+              kind: JoinConfiguration
+              nodeRegistration:
+                kubeletExtraArgs:
+                  "eviction-hard": "memory.available<200Mi,nodefs.available<1Gi,imagefs.available<1Gi"
+                  "kube-reserved": "cpu=100m,memory=128Mi"
+                  "system-reserved": "cpu=100m,memory=128Mi"
+                  "enforce-node-allocatable": "pods"
+    - role: worker
+      kubeadmConfigPatches:
+          - |
+              kind: JoinConfiguration
+              nodeRegistration:
+                kubeletExtraArgs:
+                  "eviction-hard": "memory.available<200Mi,nodefs.available<1Gi,imagefs.available<1Gi"
+                  "kube-reserved": "cpu=100m,memory=128Mi"
+                  "system-reserved": "cpu=100m,memory=128Mi"
+                  "enforce-node-allocatable": "pods"

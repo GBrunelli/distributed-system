@@ -13,7 +13,7 @@ start-argocd:
 	--debug
 
 	sleep 5s
-	kubectl wait --for=condition=ready --timeout=300s pod -l app.kubernetes.io/name=argocd-server -n argocd
+	kubectl wait --for=condition=ready --timeout=60s pod -l app.kubernetes.io/name=argocd-server -n argocd
 
 start-apps:
 	kubectl create namespace mongo
