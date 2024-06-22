@@ -1,22 +1,29 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: app-of-apps
-  namespace: argocd
-  finalizers:
-  - resources-finalizer.argocd.argoproj.io
-spec:
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
-  destination:
+    name: app-of-apps
     namespace: argocd
-    server: https://kubernetes.default.svc
-  project: default
-  source:
-    path: infrastructure/app-of-apps/apps
-    repoURL: https://github.com/GBrunelli/distributed-system
-    targetRevision: HEAD
+    finalizers:
+        - resources-finalizer.argocd.argoproj.io
+spec:
+    syncPolicy:
+        automated:
+            prune: true
+            selfHeal: true
+        syncOptions:
+            - CreateNamespace=true
+    destination:
+        namespace: argocd
+        server: https://kubernetes.default.svc
+    project: default
+    source:
+        path: infrastructure/app-of-apps/apps
+        repoURL: https://github.com/GBrunelli/distributed-system
+        targetRevision: HEAD
+    resources:
+        requests:
+            memory: "1Gi"
+            cpu: "500m"
+        limits:
+            memory: "2Gi"
+            cpu: "1"
