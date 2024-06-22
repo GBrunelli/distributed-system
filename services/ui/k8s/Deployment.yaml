@@ -33,6 +33,7 @@ spec:
         app: node-app
     ports:
         - protocol: TCP
-          port: 5012
+          port: 80
           targetPort: 5000
+          nodePort: 5012
     type: NodePort
