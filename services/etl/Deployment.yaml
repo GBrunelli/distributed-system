@@ -49,10 +49,10 @@ spec:
                           echo "PostgreSQL service is available."
             containers:
                 - name: postgres-uploader
-                  image: seu_usuario/postgres_uploader:latest
+                  image: opaulosoares/postgres_uploader:latest
                   env:
                       - name: POSTGRES_URI
-                        value: "postgresql://username:password@postgres.postgresql.svc.cluster.local:5432/your_database"
+                        value: "postgresql://postgres:helloworld@postgres.postgresql.svc.cluster.local:5432/distribuidos"
                   args:
                       - python
                       - /app/script_postgres.py
