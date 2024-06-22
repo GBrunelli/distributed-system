@@ -9,18 +9,16 @@ import "flowbite/dist/flowbite.css";
 
 const App = () => {
     return (
-        <div>
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/prescricoes" element={<Prescricoes />} />
-                <Route path="/medicos" element={<Medicos />} />
-                <Route path="/medicamentos" element={<Medicamentos />} />
-                <Route
-                    path="/pontos-distribuicao"
-                    element={<PontosDistribuicao />}
-                />
-            </Routes>
-        </div>
+        <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/prescricoes" element={<Prescricoes />} />
+            <Route path="/medicos" element={<Medicos />} />
+            <Route path="/medicamentos" element={<Medicamentos />} />
+            <Route
+                path="/pontos-distribuicao"
+                element={<PontosDistribuicao />}
+            />
+        </Routes>
     );
 };
 
