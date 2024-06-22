@@ -27,16 +27,13 @@ const SidebarItem = ({ to, icon: Icon, children }) => {
 
 function AppSidebar() {
     return (
-        <Sidebar aria-label="Default sidebar example">
-            <Sidebar.Logo>
-                <Link to="/">
-                    <img
-                        src="/assets/Horizontal.png"
-                        alt="Logo"
-                        className="w-40"
-                    />
-                </Link>
-            </Sidebar.Logo>
+        <Sidebar>
+            <Link to="/">
+                <img src="/assets/Horizontal.png" alt="Logo" className="w-40" />
+            </Link>
+
+            <hr className="my-4" />
+
             <Sidebar.Items>
                 <Sidebar.ItemGroup>
                     <SidebarItem to="/" icon={HiHome}>
