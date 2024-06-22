@@ -1,40 +1,39 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: node-app-deployment
-  labels:
-    app: node-app
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: node-app
-  template:
-    metadata:
-      labels:
+    name: node-app-deployment
+    labels:
         app: node-app
-    spec:
-      containers:
-      - name: node-app
-        image: gbrunelli/dist_system_ui:latest
-        ports:
-        - containerPort: 5000
-        env:
-        - name: NODE_ENV
-          value: "production"
+spec:
+    replicas: 3
+    selector:
+        matchLabels:
+            app: node-app
+    template:
+        metadata:
+            labels:
+                app: node-app
+        spec:
+            containers:
+                - name: node-app
+                  image: opaulosoares/dist_system_ui:latest
+                  ports:
+                      - containerPort: 5000
+                  env:
+                      - name: NODE_ENV
+                        value: "production"
 
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
-  name: node-app-service
+    name: node-app-service
 spec:
-  selector:
-    app: node-app
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 5000
-      nodePort: 30080
-  type: NodePort
+    selector:
+        app: node-app
+    ports:
+        - protocol: TCP
+          port: 80
+          targetPort: 5000
+          nodePort: 30080
+    type: NodePort
