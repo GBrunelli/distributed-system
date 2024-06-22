@@ -2,7 +2,7 @@
 FROM python:3.9-slim
 
 # Install necessary Python packages
-RUN pip install pandas openpyxl xlrd sqlalchemy psycopg2
+RUN pip install pandas openpyxl xlrd sqlalchemy psycopg2-binary
 
 # Copy the Python script
 COPY upload_to_postgre.py /app/upload_to_postgre.py
