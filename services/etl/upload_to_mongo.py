@@ -1,5 +1,5 @@
 import pandas as pd
-from neo4j import GraphDatabase
+import pymongo
 import logging
 import math
 
@@ -7,64 +7,59 @@ import math
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Define Neo4j connection details
-neo4j_uri = "neo4j://neo4j-headless.neo4j.svc.cluster.local:7687"
-neo4j_user = "neo4j"
-neo4j_password = "bmVvNGo6bXlwYXNzd29yZA=="
+# Define MongoDB connection details
+mongodb_uri = "mongodb://your_mongo_host:27017/"
+mongodb_database = "your_database"
 
-# Function to create Neo4j driver
-def get_neo4j_driver(uri, user, password):
+# Function to create MongoDB client
+def get_mongo_client(uri):
     try:
-        driver = GraphDatabase.driver(uri, auth=(user, password))
-        logger.info("Successfully created Neo4j driver.")
-        return driver
+        client = pymongo.MongoClient(uri)
+        logger.info("Successfully created MongoDB client.")
+        return client
     except Exception as e:
-        logger.error(f"Error creating Neo4j driver: {e}")
+        logger.error(f"Error creating MongoDB client: {e}")
         raise
 
-# Function to create Laboratory nodes in Neo4j
-def create_laboratory_nodes(session, laboratories):
-    query = """
-    CALL {
-        UNWIND $laboratories AS lab
-        MERGE (l:Laboratory {CNPJ: lab.CNPJ})
-        ON CREATE SET l.name = lab.LABORATÓRIO
-    } IN TRANSACTIONS
-    """
-    session.run(query, laboratories=laboratories)
+# Function to insert laboratory records
+def insert_laboratories(collection, laboratories):
+    try:
+        collection.insert_many(laboratories, ordered=False)
+        logger.info("Successfully inserted laboratory records.")
+    except pymongo.errors.BulkWriteError as e:
+        logger.error(f"Error inserting laboratory records: {e.details}")
 
-# Function to create Medicine nodes and relationships in Neo4j
-def create_medicine_nodes(session, medicines):
-    query = """
-    CALL {
-        UNWIND $medicines AS med
-        MERGE (l:Laboratory {CNPJ: med.CNPJ})
-        CREATE (m:Medicine)
-        SET m = med
-        MERGE (m)-[:PRODUCED_BY]->(l)
-    } IN TRANSACTIONS
-    """
-    session.run(query, medicines=medicines)
+# Function to insert medicine records
+def insert_medicines(collection, medicines):
+    try:
+        collection.insert_many(medicines, ordered=False)
+        logger.info("Successfully inserted medicine records.")
+    except pymongo.errors.BulkWriteError as e:
+        logger.error(f"Error inserting medicine records: {e.details}")
 
-# Function to run Neo4j transactions for laboratories in batches
-def run_neo4j_lab_transactions(laboratories, batch_size=100):
-    driver = get_neo4j_driver(neo4j_uri, neo4j_user, neo4j_password)
+# Function to run MongoDB transactions for laboratories in batches
+def run_mongo_lab_transactions(laboratories, batch_size=100):
+    client = get_mongo_client(mongodb_uri)
+    db = client[mongodb_database]
+    lab_collection = db["laboratories"]
     total_batches = math.ceil(len(laboratories) / batch_size)
-    with driver.session() as session:
-        for i in range(total_batches):
-            batch = laboratories[i * batch_size: (i + 1) * batch_size]
-            create_laboratory_nodes(session, batch)
-    logger.info("Successfully created laboratory nodes in Neo4j.")
+    for i in range(total_batches):
+        batch = laboratories[i * batch_size: (i + 1) * batch_size]
+        insert_laboratories(lab_collection, batch)
+    logger.info("Successfully created laboratory records in MongoDB.")
+    client.close()
 
-# Function to run Neo4j transactions for medicines in batches
-def run_neo4j_med_transactions(medicines, batch_size=100):
-    driver = get_neo4j_driver(neo4j_uri, neo4j_user, neo4j_password)
+# Function to run MongoDB transactions for medicines in batches
+def run_mongo_med_transactions(medicines, batch_size=100):
+    client = get_mongo_client(mongodb_uri)
+    db = client[mongodb_database]
+    med_collection = db["medicines"]
     total_batches = math.ceil(len(medicines) / batch_size)
-    with driver.session() as session:
-        for i in range(total_batches):
-            batch = medicines[i * batch_size: (i + 1) * batch_size]
-            create_medicine_nodes(session, batch)
-    logger.info("Successfully created medicine nodes and relationships in Neo4j.")
+    for i in range(total_batches):
+        batch = medicines[i * batch_size: (i + 1) * batch_size]
+        insert_medicines(med_collection, batch)
+    logger.info("Successfully created medicine records in MongoDB.")
+    client.close()
 
 # Read XLS file into a DataFrame
 xls_file_path = "/app/xls_conformidade_site_20240604_162827951.xls"
@@ -108,9 +103,9 @@ medicines = df.to_dict('records')
 
 # Run the transactions in batches
 try:
-    run_neo4j_lab_transactions(unique_laboratories, batch_size=100)
-    run_neo4j_med_transactions(medicines, batch_size=100)
-    logger.info("Data uploaded to Neo4j successfully!")
+    run_mongo_lab_transactions(unique_laboratories, batch_size=100)
+    run_mongo_med_transactions(medicines, batch_size=100)
+    logger.info("Data uploaded to MongoDB successfully!")
 except Exception as e:
-    logger.error(f"Error uploading data to Neo4j: {e}")
+    logger.error(f"Error uploading data to MongoDB: {e}")
     raise
