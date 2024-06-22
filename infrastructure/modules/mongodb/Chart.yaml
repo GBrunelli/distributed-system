@@ -1,0 +1,9 @@
+apiVersion: v2
+name: monngodb
+description: A Helm chart for Kafka
+type: application
+version: 1.0.0
+dependencies:
+  - name: mongodb
+    repository: https://charts.bitnami.com/bitnami
+    version: 15.6.10

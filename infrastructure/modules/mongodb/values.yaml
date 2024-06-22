@@ -1,0 +1,4 @@
+auth:
+  enabled: true
+  rootUser: "root"
+  rootPassword: "notAsSecretU5erPa55word"

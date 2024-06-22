@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mongodb
+  namespace: argocd
+  labels:
+    name: mongodb
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/GBrunelli/distributed-system
+    targetRevision: HEAD
+    path: ./infrastructure/modules/mongodb
+
+  destination:
+    name: in-cluster
+    namespace: mongodb
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
