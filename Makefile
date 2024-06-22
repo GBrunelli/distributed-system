@@ -9,7 +9,8 @@ start-argocd:
         helm dependency build ./infrastructure/modules/argo-cd;\
     fi
 	helm install argo-cd -n argocd \
-		--create-namespace ./infrastructure/modules/argo-cd
+	--create-namespace ./infrastructure/modules/argo-cd \
+	--debug
 
 	sleep 5s
 	kubectl wait --for=condition=ready --timeout=300s pod -l app.kubernetes.io/name=argocd-server -n argocd
