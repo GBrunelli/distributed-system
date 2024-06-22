@@ -1,6 +1,5 @@
 from sqlalchemy import create_engine, Column, Integer, String, Date, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 
 Base = declarative_base()
 
@@ -83,7 +82,7 @@ class MedicamentoDisponivel(Base):
     medicamento = relationship("Medicamento", back_populates="medicamento_disponivel")
 
 def main():
-    engine = create_engine('postgresql+psycopg2://username:password@localhost/dbname')
+    engine = create_engine('postgresql+psycopg2://postgres:helloworld@localhost/distribuidos')
     Base.metadata.create_all(engine)
 
     Session = sessionmaker(bind=engine)
