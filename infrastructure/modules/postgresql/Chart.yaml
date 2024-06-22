@@ -1,0 +1,9 @@
+apiVersion: v2
+name: kafka
+description: A Helm chart for Kafka
+type: application
+version: 1.0.0
+dependencies:
+  - name: postgresql
+    repository: https://charts.bitnami.com/bitnami
+    version: 15.5.9
