@@ -16,7 +16,7 @@ start-argocd:
 
 start-apps:
 	kubectl create namespace neo4j
-	kubectl create secret generic neo4j-auth --namespace=neo4j --from-literal=NEO4J_AUTH=neo4j/bmVvNGo6bXlwYXNzd29yZA==
+	kubectl create namespace postgresql
 	kubectl apply -f infrastructure/app-of-apps/local/argo-cd.yaml
 
 
@@ -43,4 +43,4 @@ get-info:
 up: start-kind start-argocd start-apps get-info
 down: stop-kind
 
-.PHONY: up down start-kind start-argocd start-apps start-kafka forward-ports stop-kind build-images
+.PHONY: up down start-kind start-argocd start-apps forward-ports stop-kind build-images
