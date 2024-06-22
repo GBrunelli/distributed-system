@@ -8,7 +8,7 @@ RUN pip install pandas openpyxl xlrd sqlalchemy psycopg2-binary
 COPY upload_to_postgre.py /app/upload_to_postgre.py
 
 # Copy the XLS file
-COPY xls_conformidade_site_20240604_162827951.xls /app/xls_conformidade_site_20240604_162827951.xls
+COPY xls_conformidade_gov_20240604_162827951.xls /app/xls_conformidade_gov_20240604_162827951.xls
 
 # Set the working directory
 WORKDIR /app

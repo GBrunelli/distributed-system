@@ -13,7 +13,7 @@ start-argocd:
 	--debug
 
 	sleep 5s
-	kubectl wait --for=condition=ready --timeout=60s pod -l app.kubernetes.io/name=argocd-server -n argocd --v=6
+	kubectl wait --for=condition=ready --timeout=100s pod -l app.kubernetes.io/name=argocd-server -n argocd --v=6
 
 start-apps:
 	kubectl create namespace postgre
@@ -27,6 +27,8 @@ build-images:
 	docker push opaulosoares/postgre_uploader:latest
 	docker build -t opaulosoares/dist_system_ui:latest services/ui/.
 	docker push opaulosoares/dist_system_ui:latest
+	docker build -t opaulosoares/dist_system_backend:latest services/backend/.
+	docker push opaulosoares/dist_system_backend:latest
 
 stop-kind:
 	@echo "Stopping Kind..."
