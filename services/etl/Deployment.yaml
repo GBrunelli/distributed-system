@@ -28,7 +28,7 @@
 aapiVersion: batch/v1
 kind: Job
 metadata:
-    name: postgres-uploader
+    name: postgre-uploader
     namespace: etl
 spec:
     template:
@@ -48,14 +48,14 @@ spec:
                           done
                           echo "PostgreSQL service is available."
             containers:
-                - name: postgres-uploader
-                  image: opaulosoares/postgres_uploader:latest
+                - name: postgre-uploader
+                  image: opaulosoares/postgre_uploader:latest
                   env:
                       - name: POSTGRES_URI
                         value: "postgresql://postgres:helloworld@postgres.postgresql.svc.cluster.local:5432/distribuidos"
                   args:
                       - python
-                      - /app/script_postgres.py
+                      - /app/upload_to_postgre.py
                   resources:
                       requests:
                           memory: "128Mi"

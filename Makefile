@@ -13,7 +13,7 @@ start-argocd:
 	--debug
 
 	sleep 5s
-	kubectl wait --for=condition=ready --timeout=100s pod -l app.kubernetes.io/name=argocd-server -n argocd --v=6
+	kubectl wait --for=condition=ready --timeout=300s pod -l app.kubernetes.io/name=argocd-server -n argocd --v=6
 
 start-apps:
 	kubectl create namespace postgre
