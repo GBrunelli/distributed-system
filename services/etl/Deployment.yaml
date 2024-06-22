@@ -25,37 +25,37 @@
 #                   image: gbrunelli/neo4j_uploader:latest
 #             restartPolicy: OnFailure
 
-apiVersion: batch/v1
+aapiVersion: batch/v1
 kind: Job
 metadata:
-    name: mongo-uploader
+    name: postgres-uploader
     namespace: etl
 spec:
     template:
         spec:
             initContainers:
-                - name: wait-for-mongo
+                - name: wait-for-postgres
                   image: busybox:latest
                   command:
                       - /bin/sh
                       - -c
                       - |
-                          echo "Checking MongoDB service availability..."
-                          until nc -z -v -w30 mongo.mongodb.svc.cluster.local 27017
+                          echo "Checking PostgreSQL service availability..."
+                          until nc -z -v -w30 postgres.postgresql.svc.cluster.local 5432
                           do
-                            echo "Waiting for MongoDB service to be available..."
+                            echo "Waiting for PostgreSQL service to be available..."
                             sleep 5
                           done
-                          echo "MongoDB service is available."
+                          echo "PostgreSQL service is available."
             containers:
-                - name: mongo-uploader
-                  image: seu_usuario/mongo_uploader:latest
+                - name: postgres-uploader
+                  image: seu_usuario/postgres_uploader:latest
                   env:
-                      - name: MONGO_URI
-                        value: "mongodb://mongo.mongodb.svc.cluster.local:27017/your_database"
+                      - name: POSTGRES_URI
+                        value: "postgresql://username:password@postgres.postgresql.svc.cluster.local:5432/your_database"
                   args:
                       - python
-                      - /app/upload_to_mongo.py
+                      - /app/script_postgres.py
                   resources:
                       requests:
                           memory: "128Mi"

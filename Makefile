@@ -16,15 +16,15 @@ start-argocd:
 	kubectl wait --for=condition=ready --timeout=60s pod -l app.kubernetes.io/name=argocd-server -n argocd --v=6
 
 start-apps:
-	kubectl create namespace mongo
+	kubectl create namespace postgre
 	kubectl create namespace postgresql
 	kubectl apply -f infrastructure/app-of-apps/local/argo-cd.yaml
 
 
 build-images:
 	@echo "Building Images"
-	docker build -t opaulosoares/mongo_uploader:latest services/etl/.
-	docker push opaulosoares/mongo_uploader:latest
+	docker build -t opaulosoares/postgre_uploader:latest services/etl/.
+	docker push opaulosoares/postgre_uploader:latest
 	docker build -t opaulosoares/dist_system_ui:latest services/ui/.
 	docker push opaulosoares/dist_system_ui:latest
 
