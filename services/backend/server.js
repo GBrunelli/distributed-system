@@ -1,6 +1,6 @@
 const express = require("express");
 const { Client } = require("pg");
-const { Kafka } = require("kafkajs");
+const { Kafka, logLevel } = require("kafkajs");
 
 const pacientesRoutes = require("./routes/pacientes");
 const medicosRoutes = require("./routes/medicos");
@@ -30,6 +30,7 @@ pgClient
 const kafka = new Kafka({
     clientId: "my-app",
     brokers: ["kafka.kafka.svc.cluster.local:9092"],
+    logLevel: logLevel.DEBUG,
 });
 
 const producer = kafka.producer();
