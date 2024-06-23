@@ -42,6 +42,9 @@ function AppSidebar() {
                     <SidebarItem to="/prescricoes" icon={HiClipboardList}>
                         Prescrições
                     </SidebarItem>
+                    <SidebarItem to="/pacientes" icon={HiUserGroup}>
+                        Pacientes
+                    </SidebarItem>
                     <SidebarItem to="/medicos" icon={HiUserGroup}>
                         Médicos
                     </SidebarItem>

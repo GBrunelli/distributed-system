@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const { Client } = require("pg");
 const { Kafka, logLevel } = require("kafkajs");
 
@@ -12,6 +13,7 @@ const prescricaoMedicamentosRoutes = require("./routes/prescricaoMedicamentos");
 const medicamentoDisponiveisRoutes = require("./routes/medicamentoDisponiveis");
 
 const app = express();
+app.use(cors());
 const port = 5000;
 
 const pgClient = new Client({
