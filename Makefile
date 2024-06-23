@@ -19,8 +19,9 @@ start-apps:
 	kubectl create namespace postgre
 	kubectl create namespace postgresql
 	kubectl create namespace backend
+	kubectl create namespace kafka
 	kubectl apply -f infrastructure/app-of-apps/local/argo-cd.yaml
-
+	kubectl apply -f infrastructure/app-of-apps/apps/zookeeper.yaml
 
 build-images:
 	@echo "Building Images"
