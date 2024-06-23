@@ -1,5 +1,4 @@
 const express = require("express");
-const cors = require("cors");
 const { Client } = require("pg");
 const { Kafka, logLevel } = require("kafkajs");
 
@@ -13,7 +12,6 @@ const prescricaoMedicamentosRoutes = require("./routes/prescricaoMedicamentos");
 const medicamentoDisponiveisRoutes = require("./routes/medicamentoDisponiveis");
 
 const app = express();
-app.use(cors());
 const port = 5000;
 
 const pgClient = new Client({
@@ -36,25 +34,45 @@ const kafka = new Kafka({
 });
 
 const producer = kafka.producer();
+
+producer
+    .connect()
+    .then(() => console.log("Conectado ao Kafka"))
+    .catch(console.error);
+
 const consumer = kafka.consumer({ groupId: "my-group" });
 
 const runKafka = async () => {
-    await producer.connect();
-    await consumer.connect();
-    await consumer.subscribe({
-        topic: "fila-requisicoes",
-        fromBeginning: true,
-    });
+    try {
+        console.log("Tentando conectar ao Kafka Producer...");
+        await producer.connect();
+        console.log("Conectado ao Kafka Producer.");
 
-    consumer.run({
-        eachMessage: async ({ topic, partition, message }) => {
-            console.log({
-                partition,
-                offset: message.offset,
-                value: message.value.toString(),
-            });
-        },
-    });
+        console.log("Tentando conectar ao Kafka Consumer...");
+        await consumer.connect();
+        console.log("Conectado ao Kafka Consumer.");
+
+        console.log("Tentando se inscrever no tópico...");
+        await consumer.subscribe({
+            topic: "fila-requisicoes",
+            fromBeginning: true,
+        });
+        console.log("Inscrição no tópico concluída.");
+
+        consumer.run({
+            eachMessage: async ({ topic, partition, message }) => {
+                console.log({
+                    partition,
+                    offset: message.offset,
+                    value: message.value.toString(),
+                });
+            },
+        });
+
+        console.log("Conectado ao Kafka e consumidores iniciados.");
+    } catch (err) {
+        console.error("Erro ao conectar ao Kafka", err);
+    }
 };
 
 runKafka().catch(console.error);
