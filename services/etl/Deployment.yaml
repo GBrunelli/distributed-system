@@ -14,7 +14,7 @@ spec:
                       - -c
                       - |
                           echo "Checking PostgreSQL service availability..."
-                          until nc -z -v -w30 postgres.postgresql.svc.cluster.local 5432
+                          until nc -z -v -w30 postgresql.postgresql.svc.cluster.local 5432
                           do
                             echo "Waiting for PostgreSQL service to be available..."
                             sleep 5
@@ -25,7 +25,7 @@ spec:
                   image: opaulosoares/postgre_uploader:latest
                   env:
                       - name: POSTGRES_URI
-                        value: "postgresql://postgres:helloworld@postgres.postgresql.svc.cluster.local:5432/distribuidos"
+                        value: "postgresql://postgres:helloworld@postgresql.postgresql.svc.cluster.local:5432/distribuidos"
                   args:
                       - python
                       - /app/upload_to_postgre.py
