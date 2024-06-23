@@ -37,6 +37,7 @@ const kafka = new Kafka({
         username: "user",
         password: "vSaWk098W", // sua senha decodificada
     },
+    connectionTimeout: 25000,
 });
 
 const producer = kafka.producer();
