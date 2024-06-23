@@ -18,6 +18,7 @@ start-argocd:
 start-apps:
 	kubectl create namespace postgre
 	kubectl create namespace postgresql
+	kubectl create namespace backend
 	kubectl apply -f infrastructure/app-of-apps/local/argo-cd.yaml
 
 
