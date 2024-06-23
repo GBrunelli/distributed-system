@@ -17,7 +17,7 @@ module.exports = (pgClient, producer) => {
         const { paciente_id, medico_id, data_prescricao } = req.body;
         try {
             const result = await pgClient.query(
-                "INSERT INTO prescricao (id_paciente, id_medico, data_prescricao) VALUES ($1, $2, $3) RETURNING *",
+                "INSERT INTO prescricao (paciente_id, medico_id, data_prescricao) VALUES ($1, $2, $3) RETURNING *",
                 [paciente_id, medico_id, data_prescricao]
             );
             const newPrescricao = result.rows[0];
@@ -45,7 +45,7 @@ module.exports = (pgClient, producer) => {
         const { paciente_id, medico_id, data_prescricao } = req.body;
         try {
             const result = await pgClient.query(
-                "UPDATE prescricao SET id_paciente = $1, id_medico = $2, data_prescricao = $3 WHERE id_prescricao = $4 RETURNING *",
+                "UPDATE prescricao SET paciente_id = $1, medico_id = $2, data_prescricao = $3 WHERE id_prescricao = $4 RETURNING *",
                 [paciente_id, medico_id, data_prescricao, id]
             );
             const updatedPrescricao = result.rows[0];

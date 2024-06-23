@@ -10,8 +10,8 @@ const Prescricoes = () => {
     const [itemsPerPage] = useState(5); // Número de itens por página
 
     const fields = [
-        { id: "id_medico", label: "ID do Paciente", type: "number" },
-        { id: "medico_id", label: "ID do Médico", type: "number" },
+        { id: "paciente", label: "ID do Paciente", type: "number" },
+        { id: "medico", label: "ID do Médico", type: "number" },
         { id: "data_prescricao", label: "Data da Prescrição", type: "date" },
     ];
 
@@ -90,7 +90,7 @@ const Prescricoes = () => {
                         onClick={() => paginate(index + 1)}
                         className={
                             currentPage === index + 1
-                                ? "active"
+                                ? "active pagination-btn"
                                 : "pagination-btn"
                         }
                     >
