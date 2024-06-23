@@ -28,7 +28,7 @@ persistence:
 
 config:
     kafka:
-        ZOOKEEPER_CONNECT: "zookeeper:2181"
+        ZOOKEEPER_CONNECT: "zookeeper.kafka.svc.cluster.local:2181"
         KAFKA_LISTENERS: PLAINTEXT://:9092
         KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
         KAFKA_LOG_RETENTION_HOURS: 168
