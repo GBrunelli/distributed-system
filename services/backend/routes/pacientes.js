@@ -9,7 +9,9 @@ module.exports = (pgClient, producer) => {
             res.json(result.rows);
         } catch (err) {
             console.error(err);
-            res.status(500).send("Erro ao buscar pacientes");
+            res.status(500).send(
+                "Erro ao buscar pacientes tá com CORS ativado"
+            );
         }
     });
 
