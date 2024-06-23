@@ -25,15 +25,15 @@ module.exports = (pgClient, producer) => {
             const newPontoDistribuicao = result.rows[0];
 
             // Enviar mensagem para Kafka
-            await producer.send({
-                topic: "fila-requisicoes",
-                messages: [
-                    {
-                        key: `${newPontoDistribuicao.id_ponto}`,
-                        value: JSON.stringify(newPontoDistribuicao),
-                    },
-                ],
-            });
+            // await producer.send({
+            //     topic: "fila-requisicoes",
+            //     messages: [
+            //         {
+            //             key: `${newPontoDistribuicao.id_ponto}`,
+            //             value: JSON.stringify(newPontoDistribuicao),
+            //         },
+            //     ],
+            // });
 
             res.status(201).json(newPontoDistribuicao);
         } catch (err) {
@@ -53,15 +53,15 @@ module.exports = (pgClient, producer) => {
             const updatedPontoDistribuicao = result.rows[0];
 
             // Enviar mensagem para Kafka
-            await producer.send({
-                topic: "fila-requisicoes",
-                messages: [
-                    {
-                        key: `${updatedPontoDistribuicao.id_ponto}`,
-                        value: JSON.stringify(updatedPontoDistribuicao),
-                    },
-                ],
-            });
+            // await producer.send({
+            //     topic: "fila-requisicoes",
+            //     messages: [
+            //         {
+            //             key: `${updatedPontoDistribuicao.id_ponto}`,
+            //             value: JSON.stringify(updatedPontoDistribuicao),
+            //         },
+            //     ],
+            // });
 
             res.json(updatedPontoDistribuicao);
         } catch (err) {
@@ -79,15 +79,15 @@ module.exports = (pgClient, producer) => {
             );
 
             // Enviar mensagem para Kafka
-            await producer.send({
-                topic: "fila-requisicoes",
-                messages: [
-                    {
-                        key: `${id}`,
-                        value: JSON.stringify({ id_ponto: id, deleted: true }),
-                    },
-                ],
-            });
+            // await producer.send({
+            //     topic: "fila-requisicoes",
+            //     messages: [
+            //         {
+            //             key: `${id}`,
+            //             value: JSON.stringify({ id_ponto: id, deleted: true }),
+            //         },
+            //     ],
+            // });
 
             res.status(204).send();
         } catch (err) {

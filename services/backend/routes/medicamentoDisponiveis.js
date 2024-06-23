@@ -25,15 +25,15 @@ module.exports = (pgClient, producer) => {
             const newMedicamentoDisponivel = result.rows[0];
 
             // Enviar mensagem para Kafka
-            await producer.send({
-                topic: "fila-requisicoes",
-                messages: [
-                    {
-                        key: `${newMedicamentoDisponivel.id_disponibilidade}`,
-                        value: JSON.stringify(newMedicamentoDisponivel),
-                    },
-                ],
-            });
+            // await producer.send({
+            //     topic: "fila-requisicoes",
+            //     messages: [
+            //         {
+            //             key: `${newMedicamentoDisponivel.id_disponibilidade}`,
+            //             value: JSON.stringify(newMedicamentoDisponivel),
+            //         },
+            //     ],
+            // });
 
             res.status(201).json(newMedicamentoDisponivel);
         } catch (err) {
@@ -53,15 +53,15 @@ module.exports = (pgClient, producer) => {
             const updatedMedicamentoDisponivel = result.rows[0];
 
             // Enviar mensagem para Kafka
-            await producer.send({
-                topic: "fila-requisicoes",
-                messages: [
-                    {
-                        key: `${updatedMedicamentoDisponivel.id_disponibilidade}`,
-                        value: JSON.stringify(updatedMedicamentoDisponivel),
-                    },
-                ],
-            });
+            // await producer.send({
+            //     topic: "fila-requisicoes",
+            //     messages: [
+            //         {
+            //             key: `${updatedMedicamentoDisponivel.id_disponibilidade}`,
+            //             value: JSON.stringify(updatedMedicamentoDisponivel),
+            //         },
+            //     ],
+            // });
 
             res.json(updatedMedicamentoDisponivel);
         } catch (err) {
@@ -79,18 +79,18 @@ module.exports = (pgClient, producer) => {
             );
 
             // Enviar mensagem para Kafka
-            await producer.send({
-                topic: "fila-requisicoes",
-                messages: [
-                    {
-                        key: `${id}`,
-                        value: JSON.stringify({
-                            id_disponibilidade: id,
-                            deleted: true,
-                        }),
-                    },
-                ],
-            });
+            // await producer.send({
+            //     topic: "fila-requisicoes",
+            //     messages: [
+            //         {
+            //             key: `${id}`,
+            //             value: JSON.stringify({
+            //                 id_disponibilidade: id,
+            //                 deleted: true,
+            //             }),
+            //         },
+            //     ],
+            // });
 
             res.status(204).send();
         } catch (err) {

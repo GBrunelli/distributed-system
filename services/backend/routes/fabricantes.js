@@ -23,15 +23,15 @@ module.exports = (pgClient, producer) => {
             const newFabricante = result.rows[0];
 
             // Enviar mensagem para Kafka
-            await producer.send({
-                topic: "fila-requisicoes",
-                messages: [
-                    {
-                        key: `${newFabricante.id_fabricante}`,
-                        value: JSON.stringify(newFabricante),
-                    },
-                ],
-            });
+            // await producer.send({
+            //     topic: "fila-requisicoes",
+            //     messages: [
+            //         {
+            //             key: `${newFabricante.id_fabricante}`,
+            //             value: JSON.stringify(newFabricante),
+            //         },
+            //     ],
+            // });
 
             res.status(201).json(newFabricante);
         } catch (err) {
@@ -51,15 +51,15 @@ module.exports = (pgClient, producer) => {
             const updatedFabricante = result.rows[0];
 
             // Enviar mensagem para Kafka
-            await producer.send({
-                topic: "fila-requisicoes",
-                messages: [
-                    {
-                        key: `${updatedFabricante.id_fabricante}`,
-                        value: JSON.stringify(updatedFabricante),
-                    },
-                ],
-            });
+            // await producer.send({
+            //     topic: "fila-requisicoes",
+            //     messages: [
+            //         {
+            //             key: `${updatedFabricante.id_fabricante}`,
+            //             value: JSON.stringify(updatedFabricante),
+            //         },
+            //     ],
+            // });
 
             res.json(updatedFabricante);
         } catch (err) {
@@ -77,18 +77,18 @@ module.exports = (pgClient, producer) => {
             );
 
             // Enviar mensagem para Kafka
-            await producer.send({
-                topic: "fila-requisicoes",
-                messages: [
-                    {
-                        key: `${id}`,
-                        value: JSON.stringify({
-                            id_fabricante: id,
-                            deleted: true,
-                        }),
-                    },
-                ],
-            });
+            // await producer.send({
+            //     topic: "fila-requisicoes",
+            //     messages: [
+            //         {
+            //             key: `${id}`,
+            //             value: JSON.stringify({
+            //                 id_fabricante: id,
+            //                 deleted: true,
+            //             }),
+            //         },
+            //     ],
+            // });
 
             res.status(204).send();
         } catch (err) {

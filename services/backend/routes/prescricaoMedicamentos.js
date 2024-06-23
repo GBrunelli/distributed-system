@@ -30,15 +30,15 @@ module.exports = (pgClient, producer) => {
             const newPrescricaoMedicamento = result.rows[0];
 
             // Enviar mensagem para Kafka
-            await producer.send({
-                topic: "fila-requisicoes",
-                messages: [
-                    {
-                        key: `${newPrescricaoMedicamento.id_prescricao}-${newPrescricaoMedicamento.id_medicamento}`,
-                        value: JSON.stringify(newPrescricaoMedicamento),
-                    },
-                ],
-            });
+            // await producer.send({
+            //     topic: "fila-requisicoes",
+            //     messages: [
+            //         {
+            //             key: `${newPrescricaoMedicamento.id_prescricao}-${newPrescricaoMedicamento.id_medicamento}`,
+            //             value: JSON.stringify(newPrescricaoMedicamento),
+            //         },
+            //     ],
+            // });
 
             res.status(201).json(newPrescricaoMedicamento);
         } catch (err) {
@@ -58,15 +58,15 @@ module.exports = (pgClient, producer) => {
             const updatedPrescricaoMedicamento = result.rows[0];
 
             // Enviar mensagem para Kafka
-            await producer.send({
-                topic: "fila-requisicoes",
-                messages: [
-                    {
-                        key: `${updatedPrescricaoMedicamento.id_prescricao}-${updatedPrescricaoMedicamento.id_medicamento}`,
-                        value: JSON.stringify(updatedPrescricaoMedicamento),
-                    },
-                ],
-            });
+            // await producer.send({
+            //     topic: "fila-requisicoes",
+            //     messages: [
+            //         {
+            //             key: `${updatedPrescricaoMedicamento.id_prescricao}-${updatedPrescricaoMedicamento.id_medicamento}`,
+            //             value: JSON.stringify(updatedPrescricaoMedicamento),
+            //         },
+            //     ],
+            // });
 
             res.json(updatedPrescricaoMedicamento);
         } catch (err) {
@@ -84,19 +84,19 @@ module.exports = (pgClient, producer) => {
             );
 
             // Enviar mensagem para Kafka
-            await producer.send({
-                topic: "fila-requisicoes",
-                messages: [
-                    {
-                        key: `${id_prescricao}-${id_medicamento}`,
-                        value: JSON.stringify({
-                            id_prescricao,
-                            id_medicamento,
-                            deleted: true,
-                        }),
-                    },
-                ],
-            });
+            // await producer.send({
+            //     topic: "fila-requisicoes",
+            //     messages: [
+            //         {
+            //             key: `${id_prescricao}-${id_medicamento}`,
+            //             value: JSON.stringify({
+            //                 id_prescricao,
+            //                 id_medicamento,
+            //                 deleted: true,
+            //             }),
+            //         },
+            //     ],
+            // });
 
             res.status(204).send();
         } catch (err) {
