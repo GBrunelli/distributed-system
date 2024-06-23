@@ -44,7 +44,6 @@ const consumer = kafka.consumer({ groupId: "my-group" });
 
 const runKafka = async () => {
     try {
-        await producer.connect();
         await consumer.connect();
         await consumer.subscribe({
             topic: "fila-requisicoes",

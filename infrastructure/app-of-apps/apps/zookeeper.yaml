@@ -1,49 +1,36 @@
-apiVersion: argoproj.io/v1alpha1
-kind: Application
+apiVersion: v1
+kind: Service
 metadata:
     name: zookeeper
-    namespace: argocd
-    labels:
-        name: zookeeper
+    namespace: kafka
 spec:
-    project: default
+    ports:
+        - port: 2181
+    selector:
+        app: zookeeper
 
-    source:
-        repoURL: https://charts.bitnami.com/bitnami
-        targetRevision: 8.5.1
-        chart: zookeeper
-
-    destination:
-        name: in-cluster
-        namespace: kafka
-
-    syncPolicy:
-        automated:
-            prune: true
-            selfHeal: true
-        syncOptions:
-            - Validate=false
-            - CreateNamespace=true
-
-        retry:
-            limit: 10
-            backoff:
-                duration: 10s
-                factor: 2
-                maxDuration: 3m
-
-    values:
-        replicaCount: 3
-        image:
-            registry: docker.io
-            repository: bitnami/zookeeper
-            tag: 3.6.2
-        persistence:
-            enabled: false
-        resources:
-            requests:
-                memory: "256Mi"
-                cpu: "100m"
-            limits:
-                memory: "512Mi"
-                cpu: "200m"
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+    name: zookeeper
+    namespace: kafka
+spec:
+    serviceName: "zookeeper"
+    replicas: 1
+    selector:
+        matchLabels:
+            app: zookeeper
+    template:
+        metadata:
+            labels:
+                app: zookeeper
+        spec:
+            containers:
+                - name: zookeeper
+                  image: bitnami/zookeeper:3.6.1
+                  ports:
+                      - containerPort: 2181
+                  env:
+                      - name: ALLOW_ANONYMOUS_LOGIN
+                        value: "yes"
