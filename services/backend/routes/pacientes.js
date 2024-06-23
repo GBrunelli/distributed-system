@@ -23,20 +23,20 @@ module.exports = (pgClient, producer) => {
             const newPaciente = result.rows[0];
 
             // Enviar mensagem para Kafka
-            await producer.send({
-                topic: "fila-requisicoes",
-                messages: [
-                    {
-                        key: `${newPaciente.id_paciente}`,
-                        value: JSON.stringify(newPaciente),
-                    },
-                ],
-            });
+            // await producer.send({
+            //     topic: "fila-requisicoes",
+            //     messages: [
+            //         {
+            //             key: `${newPaciente.id_paciente}`,
+            //             value: JSON.stringify(newPaciente),
+            //         },
+            //     ],
+            // });
 
             res.status(201).json(newPaciente);
         } catch (err) {
             console.error(err);
-            res.status(500).send("Erro ao adicionar paciente", err);
+            res.status(500).send("Erro ao adicionar paciente", err.message);
         }
     });
 
