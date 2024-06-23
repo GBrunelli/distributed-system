@@ -1,10 +1,18 @@
 import React, { useState } from "react";
 import { Table, Button, Modal } from "flowbite-react";
-import { HiPencilAlt, HiTrash, HiPlus } from "react-icons/hi";
+import {
+    HiPencilAlt,
+    HiTrash,
+    HiPlus,
+    HiChevronLeft,
+    HiChevronRight,
+} from "react-icons/hi";
 
 const TemplateDataDisplay = ({ fields, data, onAdd, onEdit, onDelete }) => {
     const [showModal, setShowModal] = useState(false);
     const [currentItem, setCurrentItem] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
 
     const handleAdd = () => {
         setCurrentItem(null);
@@ -23,18 +31,62 @@ const TemplateDataDisplay = ({ fields, data, onAdd, onEdit, onDelete }) => {
             return acc;
         }, {});
         if (currentItem) {
-            onEdit(currentItem.id, newItem);
+            onEdit(currentItem.id_paciente, newItem);
         } else {
             onAdd(newItem);
         }
         setShowModal(false);
     };
 
+    const handleDelete = (id) => {
+        onDelete(id);
+        if (data.length % itemsPerPage === 1 && currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
+
+    const totalPages = Math.ceil(data.length / itemsPerPage);
+    const paginatedData = data.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
     return (
-        <div className="w-full px-16 py-8 ">
+        <div className="w-full px-16 py-8">
             <div>
                 <Button onClick={handleAdd} className="mb-4">
                     <HiPlus className="mr-2" /> Adicionar
+                </Button>
+            </div>
+            <div className="flex items-center justify-end py-4">
+                <Button
+                    onClick={handlePrevPage}
+                    disabled={currentPage === 1}
+                    className="mr-2"
+                >
+                    <HiChevronLeft className="mr-2" /> Previous
+                </Button>
+                <span>
+                    Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                    className="ml-2"
+                >
+                    Next <HiChevronRight className="ml-2" />
                 </Button>
             </div>
             <Table striped={true}>
@@ -47,8 +99,8 @@ const TemplateDataDisplay = ({ fields, data, onAdd, onEdit, onDelete }) => {
                     <Table.HeadCell>Actions</Table.HeadCell>
                 </Table.Head>
                 <Table.Body>
-                    {data.map((item) => (
-                        <Table.Row key={item.id}>
+                    {paginatedData.map((item) => (
+                        <Table.Row key={item.id_paciente}>
                             {fields.map((field) => (
                                 <Table.Cell key={field.id}>
                                     {item[field.id]}
@@ -61,7 +113,9 @@ const TemplateDataDisplay = ({ fields, data, onAdd, onEdit, onDelete }) => {
                                     </Button>
                                     <Button
                                         color="red"
-                                        onClick={() => onDelete(item.id)}
+                                        onClick={() =>
+                                            handleDelete(item.id_paciente)
+                                        }
                                     >
                                         <HiTrash className="mr-2" /> Delete
                                     </Button>

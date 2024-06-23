@@ -1,10 +1,62 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import TemplatePage from "./TemplatePage";
 import TemplateDataDisplay from "./TemplateDataDisplay";
 import { FaUserDoctor } from "react-icons/fa6";
 
 const Medicos = () => {
     const [medicos, setMedicos] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        axios
+            .get("http://localhost:30081/medicos")
+            .then((response) => {
+                setMedicos(response.data);
+                setLoading(false);
+            })
+            .catch((error) => {
+                console.error("Erro ao buscar médicos:", error);
+                setLoading(false);
+            });
+    }, []);
+
+    const handleAdd = (newItem) => {
+        axios
+            .post("http://localhost:30081/medicos", newItem)
+            .then((response) => {
+                setMedicos([...medicos, response.data]);
+            })
+            .catch((error) => {
+                console.error("Erro ao adicionar médico:", error);
+            });
+    };
+
+    const handleEdit = (id, updatedItem) => {
+        axios
+            .put(`http://localhost:30081/medicos/${id}`, updatedItem)
+            .then((response) => {
+                setMedicos(
+                    medicos.map((item) =>
+                        item.id_medico === id ? response.data : item
+                    )
+                );
+            })
+            .catch((error) => {
+                console.error("Erro ao atualizar médico:", error);
+            });
+    };
+
+    const handleDelete = (id) => {
+        axios
+            .delete(`http://localhost:30081/medicos/${id}`)
+            .then(() => {
+                setMedicos(medicos.filter((item) => item.id_medico !== id));
+            })
+            .catch((error) => {
+                console.error("Erro ao deletar médico:", error);
+            });
+    };
 
     const fields = [
         { id: "nome", label: "Nome", type: "text" },
@@ -14,31 +66,19 @@ const Medicos = () => {
         { id: "email", label: "Email", type: "email" },
     ];
 
-    const handleAdd = (newItem) => {
-        setMedicos([...medicos, { ...newItem, id: Date.now() }]);
-    };
-
-    const handleEdit = (id, updatedItem) => {
-        setMedicos(
-            medicos.map((item) =>
-                item.id === id ? { ...item, ...updatedItem } : item
-            )
-        );
-    };
-
-    const handleDelete = (id) => {
-        setMedicos(medicos.filter((item) => item.id !== id));
-    };
-
     return (
         <TemplatePage title="Médicos" icon={<FaUserDoctor />}>
-            <TemplateDataDisplay
-                fields={fields}
-                data={medicos}
-                onAdd={handleAdd}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-            />
+            {loading ? (
+                <div>Loading...</div>
+            ) : (
+                <TemplateDataDisplay
+                    fields={fields}
+                    data={medicos}
+                    onAdd={handleAdd}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                />
+            )}
         </TemplatePage>
     );
 };

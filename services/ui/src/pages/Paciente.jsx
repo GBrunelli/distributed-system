@@ -5,48 +5,73 @@ import { FaUserDoctor } from "react-icons/fa6";
 import axios from "axios";
 
 const Paciente = () => {
-    const [pacientes, setPacientes] = useState([]);
+    const [paciente, setPaciente] = useState([]);
 
     const fields = [
         { id: "nome", label: "Nome", type: "text" },
-        { id: "crm", label: "CRM", type: "text" },
-        { id: "especialidade", label: "Especialidade", type: "text" },
+        { id: "cpf", label: "CPF", type: "text" },
+        { id: "data_nascimento", label: "Data de Nascimento", type: "date" },
+        { id: "endereco", label: "Endereço", type: "text" },
         { id: "telefone", label: "Telefone", type: "text" },
-        { id: "email", label: "Email", type: "email" },
     ];
 
     useEffect(() => {
-        axios
-            .get("http://localhost:30081/pacientes")
-            .then((response) => {
-                setPacientes(response.data);
-            })
-            .catch((error) => {
-                console.error("Erro ao buscar pacientes:", error);
-            });
+        fetchPacientes();
     }, []);
 
-    const handleAdd = (newItem) => {
-        setPacientes([...pacientes, { ...newItem, id: Date.now() }]);
+    const fetchPacientes = async () => {
+        try {
+            const response = await axios.get(
+                "http://localhost:30081/pacientes"
+            );
+            setPaciente(response.data);
+        } catch (error) {
+            console.error("Erro ao buscar pacientes:", error);
+        }
     };
 
-    const handleEdit = (id, updatedItem) => {
-        setPacientes(
-            pacientes.map((item) =>
-                item.id === id ? { ...item, ...updatedItem } : item
-            )
-        );
+    const handleAdd = async (newItem) => {
+        try {
+            const response = await axios.post(
+                "http://localhost:30081/pacientes",
+                newItem
+            );
+            setPaciente([...paciente, response.data]);
+        } catch (error) {
+            console.error("Erro ao adicionar paciente:", error);
+        }
     };
 
-    const handleDelete = (id) => {
-        setPacientes(pacientes.filter((item) => item.id !== id));
+    const handleEdit = async (id, updatedItem) => {
+        try {
+            const response = await axios.put(
+                `http://localhost:30081/pacientes/${id}`,
+                updatedItem
+            );
+            setPaciente(
+                paciente.map((item) =>
+                    item.id === id ? { ...item, ...response.data } : item
+                )
+            );
+        } catch (error) {
+            console.error("Erro ao atualizar paciente:", error);
+        }
+    };
+
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`http://localhost:30081/pacientes/${id}`);
+            setPaciente(paciente.filter((item) => item.id !== id));
+        } catch (error) {
+            console.error("Erro ao deletar paciente:", error);
+        }
     };
 
     return (
         <TemplatePage title="Pacientes" icon={<FaUserDoctor />}>
             <TemplateDataDisplay
                 fields={fields}
-                data={pacientes}
+                data={paciente}
                 onAdd={handleAdd}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
