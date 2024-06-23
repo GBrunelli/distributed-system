@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import TemplatePage from "./TemplatePage";
 import TemplateDataDisplay from "./TemplateDataDisplay";
-import { FaHandHoldingMedical } from "react-icons/fa6";
+import { FaMapMarkedAlt } from "react-icons/fa";
 
 const PontosDistribuicao = () => {
     const [pontosDistribuicao, setPontosDistribuicao] = useState([]);
@@ -13,32 +14,67 @@ const PontosDistribuicao = () => {
         { id: "telefone", label: "Telefone", type: "text" },
     ];
 
+    useEffect(() => {
+        axios
+            .get("http://localhost:30081/pontos-distribuicao")
+            .then((response) => {
+                setPontosDistribuicao(response.data);
+            })
+            .catch((error) => {
+                console.error("Erro ao buscar pontos de distribuição:", error);
+            });
+    }, []);
+
     const handleAdd = (newItem) => {
-        setPontosDistribuicao([
-            ...pontosDistribuicao,
-            { ...newItem, id: Date.now() },
-        ]);
+        axios
+            .post("http://localhost:30081/pontos-distribuicao", newItem)
+            .then((response) => {
+                setPontosDistribuicao([...pontosDistribuicao, response.data]);
+            })
+            .catch((error) => {
+                console.error(
+                    "Erro ao adicionar ponto de distribuição:",
+                    error
+                );
+            });
     };
 
     const handleEdit = (id, updatedItem) => {
-        setPontosDistribuicao(
-            pontosDistribuicao.map((item) =>
-                item.id === id ? { ...item, ...updatedItem } : item
+        axios
+            .put(
+                `http://localhost:30081/pontos-distribuicao/${id}`,
+                updatedItem
             )
-        );
+            .then((response) => {
+                setPontosDistribuicao(
+                    pontosDistribuicao.map((item) =>
+                        item.id === id ? response.data : item
+                    )
+                );
+            })
+            .catch((error) => {
+                console.error(
+                    "Erro ao atualizar ponto de distribuição:",
+                    error
+                );
+            });
     };
 
     const handleDelete = (id) => {
-        setPontosDistribuicao(
-            pontosDistribuicao.filter((item) => item.id !== id)
-        );
+        axios
+            .delete(`http://localhost:30081/pontos-distribuicao/${id}`)
+            .then(() => {
+                setPontosDistribuicao(
+                    pontosDistribuicao.filter((item) => item.id !== id)
+                );
+            })
+            .catch((error) => {
+                console.error("Erro ao deletar ponto de distribuição:", error);
+            });
     };
 
     return (
-        <TemplatePage
-            title="Pontos de Distribuição"
-            icon={<FaHandHoldingMedical />}
-        >
+        <TemplatePage title="Pontos de Distribuição" icon={<FaMapMarkedAlt />}>
             <TemplateDataDisplay
                 fields={fields}
                 data={pontosDistribuicao}

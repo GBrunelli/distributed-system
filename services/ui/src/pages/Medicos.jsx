@@ -59,6 +59,7 @@ const Medicos = () => {
     };
 
     const fields = [
+        { id: "id_medico", label: "ID", type: "number" },
         { id: "nome", label: "Nome", type: "text" },
         { id: "crm", label: "CRM", type: "text" },
         { id: "especialidade", label: "Especialidade", type: "text" },

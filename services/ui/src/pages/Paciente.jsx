@@ -8,6 +8,7 @@ const Paciente = () => {
     const [paciente, setPaciente] = useState([]);
 
     const fields = [
+        { id: "id_paciente", label: "ID", type: "number" },
         { id: "nome", label: "Nome", type: "text" },
         { id: "cpf", label: "CPF", type: "text" },
         { id: "data_nascimento", label: "Data de Nascimento", type: "date" },
