@@ -36,7 +36,7 @@ module.exports = (pgClient, producer) => {
             res.status(201).json(newPaciente);
         } catch (err) {
             console.error(err);
-            res.status(500).send("Erro ao adicionar paciente");
+            res.status(500).send("Erro ao adicionar paciente", err);
         }
     });
 
