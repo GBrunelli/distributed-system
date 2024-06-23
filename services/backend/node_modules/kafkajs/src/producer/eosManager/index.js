@@ -1,13 +1,14 @@
 const createRetry = require('../../retry')
+const Lock = require('../../utils/lock')
 const { KafkaJSNonRetriableError } = require('../../errors')
 const COORDINATOR_TYPES = require('../../protocol/coordinatorTypes')
 const createStateMachine = require('./transactionStateMachine')
+const { INT_32_MAX_VALUE } = require('../../constants')
 const assert = require('assert')
 
 const STATES = require('./transactionStates')
 const NO_PRODUCER_ID = -1
 const SEQUENCE_START = 0
-const INT_32_MAX_VALUE = Math.pow(2, 32)
 const INIT_PRODUCER_RETRIABLE_PROTOCOL_ERRORS = [
   'NOT_COORDINATOR_FOR_GROUP',
   'GROUP_COORDINATOR_NOT_AVAILABLE',
@@ -65,14 +66,25 @@ module.exports = ({
   let producerSequence = {}
 
   /**
+   * Idempotent production requires a mutex lock per broker to serialize requests with sequence number handling
+   */
+  let brokerMutexLocks = {}
+
+  /**
    * Topic partitions already participating in the transaction
    */
   let transactionTopicPartitions = {}
+
+  /**
+   * Offsets have been added to the transaction
+   */
+  let hasOffsetsAddedToTransaction = false
 
   const stateMachine = createStateMachine({ logger })
   stateMachine.on('transition', ({ to }) => {
     if (to === STATES.READY) {
       transactionTopicPartitions = {}
+      hasOffsetsAddedToTransaction = false
     }
   })
 
@@ -87,6 +99,22 @@ module.exports = ({
     if (!transactional) {
       throw new KafkaJSNonRetriableError('Method unavailable if non-transactional')
     }
+  }
+
+  /**
+   * A transaction is ongoing when offsets or partitions added to it
+   *
+   * @returns {boolean}
+   */
+  const isOngoing = () => {
+    return (
+      hasOffsetsAddedToTransaction ||
+      Object.entries(transactionTopicPartitions).some(([, partitions]) => {
+        return Object.entries(partitions).some(
+          ([, isPartitionAddedToTransaction]) => isPartitionAddedToTransaction
+        )
+      })
+    )
   }
 
   const eosManager = stateMachine.createGuarded(
@@ -134,6 +162,7 @@ module.exports = ({
             producerId = result.producerId
             producerEpoch = result.producerEpoch
             producerSequence = {}
+            brokerMutexLocks = {}
 
             logger.debug('Initialized producer id & epoch', { producerId, producerEpoch })
           } catch (e) {
@@ -260,6 +289,13 @@ module.exports = ({
         transactionalGuard()
         stateMachine.transitionTo(STATES.COMMITTING)
 
+        if (!isOngoing()) {
+          logger.debug('No partitions or offsets registered, not sending EndTxn')
+
+          stateMachine.transitionTo(STATES.READY)
+          return
+        }
+
         const broker = await findTransactionCoordinator()
         await broker.endTxn({
           producerId,
@@ -277,6 +313,13 @@ module.exports = ({
       async abort() {
         transactionalGuard()
         stateMachine.transitionTo(STATES.ABORTING)
+
+        if (!isOngoing()) {
+          logger.debug('No partitions or offsets registered, not sending EndTxn')
+
+          stateMachine.transitionTo(STATES.READY)
+          return
+        }
 
         const broker = await findTransactionCoordinator()
         await broker.endTxn({
@@ -302,6 +345,18 @@ module.exports = ({
 
       isInTransaction() {
         return stateMachine.state() === STATES.TRANSACTING
+      },
+
+      async acquireBrokerLock(broker) {
+        if (this.isInitialized()) {
+          brokerMutexLocks[broker.nodeId] =
+            brokerMutexLocks[broker.nodeId] || new Lock({ timeout: 0xffff })
+          await brokerMutexLocks[broker.nodeId].acquire()
+        }
+      },
+
+      releaseBrokerLock(broker) {
+        if (this.isInitialized()) brokerMutexLocks[broker.nodeId].release()
       },
 
       /**
@@ -333,6 +388,8 @@ module.exports = ({
           producerEpoch,
           groupId: consumerGroupId,
         })
+
+        hasOffsetsAddedToTransaction = true
 
         let groupCoordinator = await cluster.findGroupCoordinator({
           groupId: consumerGroupId,

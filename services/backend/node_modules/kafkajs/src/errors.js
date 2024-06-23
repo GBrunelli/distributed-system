@@ -2,21 +2,21 @@ const pkgJson = require('../package.json')
 const { bugs } = pkgJson
 
 class KafkaJSError extends Error {
-  constructor(e, { retriable = true } = {}) {
-    super(e)
+  constructor(e, { retriable = true, cause } = {}) {
+    super(e, { cause })
     Error.captureStackTrace(this, this.constructor)
     this.message = e.message || e
     this.name = 'KafkaJSError'
     this.retriable = retriable
     this.helpUrl = e.helpUrl
+    this.cause = cause
   }
 }
 
 class KafkaJSNonRetriableError extends KafkaJSError {
-  constructor(e) {
-    super(e, { retriable: false })
+  constructor(e, { cause } = {}) {
+    super(e, { retriable: false, cause })
     this.name = 'KafkaJSNonRetriableError'
-    this.originalError = e
   }
 }
 
@@ -48,9 +48,8 @@ class KafkaJSMemberIdRequired extends KafkaJSProtocolError {
 
 class KafkaJSNumberOfRetriesExceeded extends KafkaJSNonRetriableError {
   constructor(e, { retryCount, retryTime }) {
-    super(e)
+    super(e, { cause: e })
     this.stack = `${this.name}\n  Caused by: ${e.stack}`
-    this.originalError = e
     this.retryCount = retryCount
     this.retryTime = retryTime
     this.name = 'KafkaJSNumberOfRetriesExceeded'
@@ -58,6 +57,12 @@ class KafkaJSNumberOfRetriesExceeded extends KafkaJSNonRetriableError {
 }
 
 class KafkaJSConnectionError extends KafkaJSError {
+  /**
+   * @param {string} e
+   * @param {object} options
+   * @param {string} [options.broker]
+   * @param {string} [options.code]
+   */
   constructor(e, { broker, code } = {}) {
     super(e)
     this.broker = broker
@@ -233,6 +238,16 @@ class KafkaJSCreateTopicError extends KafkaJSProtocolError {
     this.name = 'KafkaJSCreateTopicError'
   }
 }
+
+class KafkaJSAlterPartitionReassignmentsError extends KafkaJSProtocolError {
+  constructor(e, topicName, partition) {
+    super(e)
+    this.topic = topicName
+    this.partition = partition
+    this.name = 'KafkaJSAlterPartitionReassignmentsError'
+  }
+}
+
 class KafkaJSAggregateError extends Error {
   constructor(message, errors) {
     super(message)
@@ -240,6 +255,22 @@ class KafkaJSAggregateError extends Error {
     this.name = 'KafkaJSAggregateError'
   }
 }
+
+class KafkaJSFetcherRebalanceError extends Error {}
+
+class KafkaJSNoBrokerAvailableError extends KafkaJSError {
+  constructor() {
+    super('No broker available')
+    this.name = 'KafkaJSNoBrokerAvailableError'
+  }
+}
+
+const isRebalancing = e =>
+  e.type === 'REBALANCE_IN_PROGRESS' ||
+  e.type === 'NOT_COORDINATOR_FOR_GROUP' ||
+  e.type === 'ILLEGAL_GENERATION'
+
+const isKafkaJSError = e => e instanceof KafkaJSError
 
 module.exports = {
   KafkaJSError,
@@ -270,4 +301,9 @@ module.exports = {
   KafkaJSInvalidLongError,
   KafkaJSCreateTopicError,
   KafkaJSAggregateError,
+  KafkaJSFetcherRebalanceError,
+  KafkaJSNoBrokerAvailableError,
+  KafkaJSAlterPartitionReassignmentsError,
+  isRebalancing,
+  isKafkaJSError,
 }

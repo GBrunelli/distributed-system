@@ -16,10 +16,41 @@ export class Kafka {
 
 export type BrokersFunction = () => string[] | Promise<string[]>
 
+type SaslAuthenticationRequest = {
+  encode: () => Buffer | Promise<Buffer>
+}
+type SaslAuthenticationResponse<ParseResult> = {
+  decode: (rawResponse: Buffer) => Buffer | Promise<Buffer>
+  parse: (data: Buffer) => ParseResult
+}
+
+export type Authenticator = {
+  authenticate: () => Promise<void>
+}
+
+export type SaslAuthenticateArgs<ParseResult> = {
+  request: SaslAuthenticationRequest
+  response?: SaslAuthenticationResponse<ParseResult>
+}
+
+export type AuthenticationProviderArgs = {
+  host: string
+  port: number
+  logger: Logger
+  saslAuthenticate: <ParseResult>(
+    args: SaslAuthenticateArgs<ParseResult>
+  ) => Promise<ParseResult | void>
+}
+
+export type Mechanism = {
+  mechanism: string
+  authenticationProvider: (args: AuthenticationProviderArgs) => Authenticator
+}
+
 export interface KafkaConfig {
   brokers: string[] | BrokersFunction
   ssl?: tls.ConnectionOptions | boolean
-  sasl?: SASLOptions
+  sasl?: SASLOptions | Mechanism
   clientId?: string
   connectionTimeout?: number
   authenticationTimeout?: number
@@ -33,9 +64,9 @@ export interface KafkaConfig {
 }
 
 export interface ISocketFactoryArgs {
-  host: string,
-  port: number,
-  ssl: tls.ConnectionOptions,
+  host: string
+  port: number
+  ssl: tls.ConnectionOptions
   onConnect: () => void
 }
 
@@ -46,15 +77,22 @@ export interface OauthbearerProviderResponse {
 }
 
 type SASLMechanismOptionsMap = {
-  'plain': { username: string, password: string },
-  'scram-sha-256': { username: string, password: string },
-  'scram-sha-512': { username: string, password: string },
-  'aws': { authorizationIdentity: string, accessKeyId: string, secretAccessKey: string, sessionToken?: string },
-  'oauthbearer': { oauthBearerProvider: () => Promise<OauthbearerProviderResponse> }
+  plain: { username: string; password: string }
+  'scram-sha-256': { username: string; password: string }
+  'scram-sha-512': { username: string; password: string }
+  aws: {
+    authorizationIdentity: string
+    accessKeyId: string
+    secretAccessKey: string
+    sessionToken?: string
+  }
+  oauthbearer: { oauthBearerProvider: () => Promise<OauthbearerProviderResponse> }
 }
 
 export type SASLMechanism = keyof SASLMechanismOptionsMap
-type SASLMechanismOptions<T> = T extends SASLMechanism ? { mechanism: T } & SASLMechanismOptionsMap[T] : never
+type SASLMechanismOptions<T> = T extends SASLMechanism
+  ? { mechanism: T } & SASLMechanismOptionsMap[T]
+  : never
 export type SASLOptions = SASLMechanismOptions<SASLMechanism>
 
 export interface ProducerConfig {
@@ -84,11 +122,18 @@ export interface PartitionerArgs {
 
 export type ICustomPartitioner = () => (args: PartitionerArgs) => number
 export type DefaultPartitioner = ICustomPartitioner
-export type JavaCompatiblePartitioner = ICustomPartitioner
+export type LegacyPartitioner = ICustomPartitioner
 
 export const Partitioners: {
   DefaultPartitioner: DefaultPartitioner
-  JavaCompatiblePartitioner: JavaCompatiblePartitioner
+  LegacyPartitioner: LegacyPartitioner
+  /**
+   * @deprecated Use DefaultPartitioner instead
+   *
+   * The JavaCompatiblePartitioner was renamed DefaultPartitioner
+   * and made to be the default in 2.0.0.
+   */
+  JavaCompatiblePartitioner: DefaultPartitioner
 }
 
 export type PartitionMetadata = {
@@ -101,7 +146,7 @@ export type PartitionMetadata = {
 }
 
 export interface IHeaders {
-  [key: string]: Buffer | string | undefined
+  [key: string]: Buffer | string | (Buffer | string)[] | undefined
 }
 
 export interface ConsumerConfig {
@@ -122,7 +167,11 @@ export interface ConsumerConfig {
   rackId?: string
 }
 
-export type PartitionAssigner = (config: { cluster: Cluster }) => Assigner
+export type PartitionAssigner = (config: {
+  cluster: Cluster
+  groupId: string
+  logger: Logger
+}) => Assigner
 
 export interface CoordinatorMetadata {
   errorCode: number
@@ -134,6 +183,10 @@ export interface CoordinatorMetadata {
 }
 
 export type Cluster = {
+  getNodeIds(): number[]
+  metadata(): Promise<BrokerMetadata>
+  removeBroker(options: { host: string; port: number }): void
+  addMultipleTargetTopics(topics: string[]): Promise<void>
   isConnected(): boolean
   connect(): Promise<void>
   disconnect(): Promise<void>
@@ -178,6 +231,7 @@ export interface RetryOptions {
   factor?: number
   multiplier?: number
   retries?: number
+  restartOnFailure?: (e: Error) => Promise<boolean>
 }
 
 export interface AdminConfig {
@@ -188,8 +242,8 @@ export interface ITopicConfig {
   topic: string
   numPartitions?: number
   replicationFactor?: number
-  replicaAssignment?: object[]
-  configEntries?: object[]
+  replicaAssignment?: ReplicaAssignment[]
+  configEntries?: IResourceConfigEntry[]
 }
 
 export interface ITopicPartitionConfig {
@@ -203,18 +257,14 @@ export interface ITopicMetadata {
   partitions: PartitionMetadata[]
 }
 
-/**
- * @deprecated
- * Use ConfigResourceTypes or AclResourceTypes
- */
-export enum ResourceTypes {
-  UNKNOWN = 0,
-  ANY = 1,
-  TOPIC = 2,
-  GROUP = 3,
-  CLUSTER = 4,
-  TRANSACTIONAL_ID = 5,
-  DELEGATION_TOKEN = 6,
+export interface ReplicaAssignment {
+  partition: number
+  replicas: Array<number>
+}
+
+export interface PartitionReassignment {
+  topic: string
+  partitionAssignment: Array<ReplicaAssignment>
 }
 
 export enum AclResourceTypes {
@@ -276,7 +326,7 @@ export enum ResourcePatternTypes {
 }
 
 export interface ResourceConfigQuery {
-  type: ResourceTypes | ConfigResourceTypes
+  type: ConfigResourceTypes
   name: string
   configNames?: string[]
 }
@@ -285,7 +335,7 @@ export interface ConfigEntries {
   configName: string
   configValue: string
   isDefault: boolean
-  configSource: ConfigSource,
+  configSource: ConfigSource
   isSensitive: boolean
   readOnly: boolean
   configSynonyms: ConfigSynonyms[]
@@ -303,15 +353,20 @@ export interface DescribeConfigResponse {
     errorCode: number
     errorMessage: string
     resourceName: string
-    resourceType: ResourceTypes | ConfigResourceTypes
+    resourceType: ConfigResourceTypes
   }[]
   throttleTime: number
 }
 
-export interface IResourceConfig {
-  type: ResourceTypes | ConfigResourceTypes
+export interface IResourceConfigEntry {
   name: string
-  configEntries: { name: string; value: string }[]
+  value: string
+}
+
+export interface IResourceConfig {
+  type: ConfigResourceTypes
+  name: string
+  configEntries: IResourceConfigEntry[]
 }
 
 type ValueOf<T> = T[keyof T]
@@ -427,6 +482,22 @@ export interface DeleteAclResponse {
   filterResponses: DeleteAclFilterResponses[]
 }
 
+export interface ListPartitionReassignmentsResponse {
+  topics: OngoingTopicReassignment[]
+}
+
+export interface OngoingTopicReassignment {
+  topic: string
+  partitions: OngoingPartitionReassignment[]
+}
+
+export interface OngoingPartitionReassignment {
+  partitionIndex: number
+  replicas: number[]
+  addingReplicas?: number[]
+  removingReplicas?: number[]
+}
+
 export type Admin = {
   connect(): Promise<void>
   disconnect(): Promise<void>
@@ -444,19 +515,11 @@ export type Admin = {
     topicPartitions: ITopicPartitionConfig[]
   }): Promise<boolean>
   fetchTopicMetadata(options?: { topics: string[] }): Promise<{ topics: Array<ITopicMetadata> }>
-  /**
-   * @deprecated "topic: string" replaced by "topics: string[]"
-   */
-  fetchOffsets(options: {
-    groupId: string
-    topic: string
-    resolveOffsets?: boolean
-  }): Promise<FetchOffsetsPartition[]>
   fetchOffsets(options: {
     groupId: string
     topics?: string[]
     resolveOffsets?: boolean
-  }): Promise<Array<{topic: string, partitions: FetchOffsetsPartition[]}>>
+  }): Promise<Array<{ topic: string; partitions: FetchOffsetsPartition[] }>>
   fetchTopicOffsets(topic: string): Promise<Array<SeekEntry & { high: string; low: string }>>
   fetchTopicOffsetsByTimestamp(topic: string, timestamp?: number): Promise<Array<SeekEntry>>
   describeCluster(): Promise<{
@@ -478,12 +541,35 @@ export type Admin = {
   deleteAcls(options: { filters: AclFilter[] }): Promise<DeleteAclResponse>
   createAcls(options: { acl: AclEntry[] }): Promise<boolean>
   deleteTopicRecords(options: { topic: string; partitions: SeekEntry[] }): Promise<void>
+  alterPartitionReassignments(request: {
+    topics: PartitionReassignment[]
+    timeout?: number
+  }): Promise<void>
+  listPartitionReassignments(request: {
+    topics?: TopicPartitions[]
+    timeout?: number
+  }): Promise<ListPartitionReassignmentsResponse>
   logger(): Logger
-  on(eventName: AdminEvents['CONNECT'], listener: (event: ConnectEvent) => void): RemoveInstrumentationEventListener<typeof eventName>;
-  on(eventName: AdminEvents['DISCONNECT'], listener: (event: DisconnectEvent) => void): RemoveInstrumentationEventListener<typeof eventName>;
-  on(eventName: AdminEvents['REQUEST'], listener: (event: RequestEvent) => void): RemoveInstrumentationEventListener<typeof eventName>;
-  on(eventName: AdminEvents['REQUEST_QUEUE_SIZE'], listener: (event: RequestQueueSizeEvent) => void): RemoveInstrumentationEventListener<typeof eventName>;
-  on(eventName: AdminEvents['REQUEST_TIMEOUT'], listener: (event: RequestTimeoutEvent) => void): RemoveInstrumentationEventListener<typeof eventName>;
+  on(
+    eventName: AdminEvents['CONNECT'],
+    listener: (event: ConnectEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: AdminEvents['DISCONNECT'],
+    listener: (event: DisconnectEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: AdminEvents['REQUEST'],
+    listener: (event: RequestEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: AdminEvents['REQUEST_QUEUE_SIZE'],
+    listener: (event: RequestQueueSizeEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: AdminEvents['REQUEST_TIMEOUT'],
+    listener: (event: RequestTimeoutEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
   on(
     eventName: ValueOf<AdminEvents>,
     listener: (event: InstrumentationEvent<any>) => void
@@ -569,9 +655,8 @@ export type Broker = {
   connect(): Promise<void>
   disconnect(): Promise<void>
   apiVersions(): Promise<ApiVersions>
-  metadata(
-    topics: string[]
-  ): Promise<BrokerMetadata>
+  metadata(topics: string[]): Promise<BrokerMetadata>
+  describeGroups: (options: { groupIds: string[] }) => Promise<any>
   offsetCommit(request: {
     groupId: string
     groupGenerationId: number
@@ -609,17 +694,37 @@ export type Broker = {
     timeout?: number
     compression?: CompressionTypes
   }): Promise<any>
+  alterPartitionReassignments(request: {
+    topics: PartitionReassignment[]
+    timeout?: number
+  }): Promise<any>
+  listPartitionReassignments(request: {
+    topics?: TopicPartitions[]
+    timeout?: number
+  }): Promise<ListPartitionReassignmentsResponse>
 }
 
-export type KafkaMessage = {
+interface MessageSetEntry {
   key: Buffer | null
   value: Buffer | null
   timestamp: string
-  size: number
   attributes: number
   offset: string
-  headers?: IHeaders
+  size: number
+  headers?: never
 }
+
+interface RecordBatchEntry {
+  key: Buffer | null
+  value: Buffer | null
+  timestamp: string
+  attributes: number
+  offset: string
+  headers: IHeaders
+  size?: never
+}
+
+export type KafkaMessage = MessageSetEntry | RecordBatchEntry
 
 export interface ProducerRecord {
   topic: string
@@ -684,11 +789,26 @@ export type Producer = Sender & {
   disconnect(): Promise<void>
   isIdempotent(): boolean
   readonly events: ProducerEvents
-  on(eventName: ProducerEvents['CONNECT'], listener: (event: ConnectEvent) => void): RemoveInstrumentationEventListener<typeof eventName>;
-  on(eventName: ProducerEvents['DISCONNECT'], listener: (event: DisconnectEvent) => void): RemoveInstrumentationEventListener<typeof eventName>;
-  on(eventName: ProducerEvents['REQUEST'], listener: (event: RequestEvent) => void): RemoveInstrumentationEventListener<typeof eventName>;
-  on(eventName: ProducerEvents['REQUEST_QUEUE_SIZE'], listener: (event: RequestQueueSizeEvent) => void): RemoveInstrumentationEventListener<typeof eventName>;
-  on(eventName: ProducerEvents['REQUEST_TIMEOUT'], listener: (event: RequestTimeoutEvent) => void): RemoveInstrumentationEventListener<typeof eventName>;
+  on(
+    eventName: ProducerEvents['CONNECT'],
+    listener: (event: ConnectEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ProducerEvents['DISCONNECT'],
+    listener: (event: DisconnectEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ProducerEvents['REQUEST'],
+    listener: (event: RequestEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ProducerEvents['REQUEST_QUEUE_SIZE'],
+    listener: (event: RequestQueueSizeEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ProducerEvents['REQUEST_TIMEOUT'],
+    listener: (event: RequestTimeoutEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
   on(
     eventName: ValueOf<ProducerEvents>,
     listener: (event: InstrumentationEvent<any>) => void
@@ -720,7 +840,13 @@ export type MemberDescription = {
 }
 
 // See https://github.com/apache/kafka/blob/2.4.0/clients/src/main/java/org/apache/kafka/common/ConsumerGroupState.java#L25
-export type ConsumerGroupState = 'Unknown' | 'PreparingRebalance' | 'CompletingRebalance' | 'Stable' | 'Dead' | 'Empty';
+export type ConsumerGroupState =
+  | 'Unknown'
+  | 'PreparingRebalance'
+  | 'CompletingRebalance'
+  | 'Stable'
+  | 'Dead'
+  | 'Empty'
 
 export type GroupDescription = {
   groupId: string
@@ -746,9 +872,6 @@ export type TopicPartitionOffset = TopicPartition & {
 export type TopicPartitionOffsetAndMetadata = TopicPartitionOffset & {
   metadata?: string | null
 }
-
-// TODO: Remove with 2.x
-export type TopicPartitionOffsetAndMedata = TopicPartitionOffsetAndMetadata
 
 export type Batch = {
   topic: string
@@ -814,9 +937,11 @@ export type ConsumerGroupJoinEvent = InstrumentationEvent<{
   memberId: string
   memberAssignment: IMemberAssignment
 }>
+export type ConsumerFetchStartEvent = InstrumentationEvent<{ nodeId: number }>
 export type ConsumerFetchEvent = InstrumentationEvent<{
   numberOfBatches: number
   duration: number
+  nodeId: number
 }>
 interface IBatchProcessEvent {
   topic: string
@@ -859,12 +984,14 @@ export interface EachMessagePayload {
   partition: number
   message: KafkaMessage
   heartbeat(): Promise<void>
+  pause(): () => void
 }
 
 export interface EachBatchPayload {
   batch: Batch
   resolveOffset(offset: string): void
   heartbeat(): Promise<void>
+  pause(): () => void
   commitOffsetsIfNecessary(offsets?: Offsets): Promise<void>
   uncommittedOffsets(): OffsetsByTopicPartition
   isRunning(): boolean
@@ -896,12 +1023,16 @@ export type ConsumerRunConfig = {
   eachMessage?: EachMessageHandler
 }
 
+/**
+ * @deprecated Replaced by ConsumerSubscribeTopics
+ */
 export type ConsumerSubscribeTopic = { topic: string | RegExp; fromBeginning?: boolean }
+export type ConsumerSubscribeTopics = { topics: (string | RegExp)[]; fromBeginning?: boolean }
 
 export type Consumer = {
   connect(): Promise<void>
   disconnect(): Promise<void>
-  subscribe(topic: ConsumerSubscribeTopic): Promise<void>
+  subscribe(subscription: ConsumerSubscribeTopics | ConsumerSubscribeTopic): Promise<void>
   stop(): Promise<void>
   run(config?: ConsumerRunConfig): Promise<void>
   commitOffsets(topicPartitions: Array<TopicPartitionOffsetAndMetadata>): Promise<void>
@@ -910,22 +1041,70 @@ export type Consumer = {
   pause(topics: Array<{ topic: string; partitions?: number[] }>): void
   paused(): TopicPartitions[]
   resume(topics: Array<{ topic: string; partitions?: number[] }>): void
-  on(eventName: ConsumerEvents['HEARTBEAT'], listener: (event: ConsumerHeartbeatEvent) => void): RemoveInstrumentationEventListener<typeof eventName>
-  on(eventName: ConsumerEvents['COMMIT_OFFSETS'], listener: (event: ConsumerCommitOffsetsEvent) => void): RemoveInstrumentationEventListener<typeof eventName>
-  on(eventName: ConsumerEvents['GROUP_JOIN'], listener: (event: ConsumerGroupJoinEvent) => void): RemoveInstrumentationEventListener<typeof eventName>
-  on(eventName: ConsumerEvents['FETCH_START'], listener: (event: InstrumentationEvent<{}>) => void): RemoveInstrumentationEventListener<typeof eventName>
-  on(eventName: ConsumerEvents['FETCH'], listener: (event: ConsumerFetchEvent) => void): RemoveInstrumentationEventListener<typeof eventName>
-  on(eventName: ConsumerEvents['START_BATCH_PROCESS'], listener: (event: ConsumerStartBatchProcessEvent) => void): RemoveInstrumentationEventListener<typeof eventName>
-  on(eventName: ConsumerEvents['END_BATCH_PROCESS'], listener: (event: ConsumerEndBatchProcessEvent) => void): RemoveInstrumentationEventListener<typeof eventName>
-  on(eventName: ConsumerEvents['CONNECT'], listener: (event: ConnectEvent) => void): RemoveInstrumentationEventListener<typeof eventName>
-  on(eventName: ConsumerEvents['DISCONNECT'], listener: (event: DisconnectEvent) => void): RemoveInstrumentationEventListener<typeof eventName>
-  on(eventName: ConsumerEvents['STOP'], listener: (event: InstrumentationEvent<null>) => void): RemoveInstrumentationEventListener<typeof eventName>
-  on(eventName: ConsumerEvents['CRASH'], listener: (event: ConsumerCrashEvent) => void): RemoveInstrumentationEventListener<typeof eventName>
-  on(eventName: ConsumerEvents['REBALANCING'], listener: (event: ConsumerRebalancingEvent) => void): RemoveInstrumentationEventListener<typeof eventName>
-  on(eventName: ConsumerEvents['RECEIVED_UNSUBSCRIBED_TOPICS'], listener: (event: ConsumerReceivedUnsubcribedTopicsEvent) => void): RemoveInstrumentationEventListener<typeof eventName>
-  on(eventName: ConsumerEvents['REQUEST'], listener: (event: RequestEvent) => void): RemoveInstrumentationEventListener<typeof eventName>
-  on(eventName: ConsumerEvents['REQUEST_TIMEOUT'], listener: (event: RequestTimeoutEvent) => void): RemoveInstrumentationEventListener<typeof eventName>
-  on(eventName: ConsumerEvents['REQUEST_QUEUE_SIZE'], listener: (event: RequestQueueSizeEvent) => void): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ConsumerEvents['HEARTBEAT'],
+    listener: (event: ConsumerHeartbeatEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ConsumerEvents['COMMIT_OFFSETS'],
+    listener: (event: ConsumerCommitOffsetsEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ConsumerEvents['GROUP_JOIN'],
+    listener: (event: ConsumerGroupJoinEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ConsumerEvents['FETCH_START'],
+    listener: (event: ConsumerFetchStartEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ConsumerEvents['FETCH'],
+    listener: (event: ConsumerFetchEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ConsumerEvents['START_BATCH_PROCESS'],
+    listener: (event: ConsumerStartBatchProcessEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ConsumerEvents['END_BATCH_PROCESS'],
+    listener: (event: ConsumerEndBatchProcessEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ConsumerEvents['CONNECT'],
+    listener: (event: ConnectEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ConsumerEvents['DISCONNECT'],
+    listener: (event: DisconnectEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ConsumerEvents['STOP'],
+    listener: (event: InstrumentationEvent<null>) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ConsumerEvents['CRASH'],
+    listener: (event: ConsumerCrashEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ConsumerEvents['REBALANCING'],
+    listener: (event: ConsumerRebalancingEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ConsumerEvents['RECEIVED_UNSUBSCRIBED_TOPICS'],
+    listener: (event: ConsumerReceivedUnsubcribedTopicsEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ConsumerEvents['REQUEST'],
+    listener: (event: RequestEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ConsumerEvents['REQUEST_TIMEOUT'],
+    listener: (event: RequestTimeoutEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
+  on(
+    eventName: ConsumerEvents['REQUEST_QUEUE_SIZE'],
+    listener: (event: RequestQueueSizeEvent) => void
+  ): RemoveInstrumentationEventListener<typeof eventName>
   on(
     eventName: ValueOf<ConsumerEvents>,
     listener: (event: InstrumentationEvent<any>) => void
@@ -950,10 +1129,11 @@ export var CompressionCodecs: {
 }
 
 export class KafkaJSError extends Error {
-  readonly message: Error["message"];
-  readonly name: string;
-  readonly retriable: boolean;
-  readonly helpUrl?: string;
+  readonly message: Error['message']
+  readonly name: string
+  readonly retriable: boolean
+  readonly helpUrl?: string
+  readonly cause?: Error
 
   constructor(e: Error | string, metadata?: KafkaJSErrorMetadata)
 }
@@ -963,36 +1143,46 @@ export class KafkaJSNonRetriableError extends KafkaJSError {
 }
 
 export class KafkaJSProtocolError extends KafkaJSError {
-  readonly code: number;
-  readonly type: string;
+  readonly code: number
+  readonly type: string
   constructor(e: Error | string)
 }
 
+export class KafkaJSAggregateError extends Error {
+  readonly errors: (Error | string)[]
+  constructor(message: Error | string, errors: (Error | string)[])
+}
+
 export class KafkaJSOffsetOutOfRange extends KafkaJSProtocolError {
-  readonly topic: string;
-  readonly partition: number;
+  readonly topic: string
+  readonly partition: number
   constructor(e: Error | string, metadata?: KafkaJSOffsetOutOfRangeMetadata)
 }
 
+export class KafkaJSAlterPartitionReassignmentsError extends KafkaJSProtocolError {
+  readonly topic?: string
+  readonly partition?: number
+  constructor(e: Error | string, topic?: string, partition?: number)
+}
+
 export class KafkaJSNumberOfRetriesExceeded extends KafkaJSNonRetriableError {
-  readonly stack: string;
-  readonly originalError: Error;
-  readonly retryCount: number;
-  readonly retryTime: number;
+  readonly stack: string
+  readonly retryCount: number
+  readonly retryTime: number
   constructor(e: Error | string, metadata?: KafkaJSNumberOfRetriesExceededMetadata)
 }
 
 export class KafkaJSConnectionError extends KafkaJSError {
-  readonly broker: string;
+  readonly broker: string
   constructor(e: Error | string, metadata?: KafkaJSConnectionErrorMetadata)
 }
 
 export class KafkaJSRequestTimeoutError extends KafkaJSError {
-  readonly broker: string;
-  readonly correlationId: number;
-  readonly createdAt: number;
-  readonly sentAt: number;
-  readonly pendingDuration: number;
+  readonly broker: string
+  readonly correlationId: number
+  readonly createdAt: number
+  readonly sentAt: number
+  readonly pendingDuration: number
   constructor(e: Error | string, metadata?: KafkaJSRequestTimeoutErrorMetadata)
 }
 
@@ -1001,18 +1191,18 @@ export class KafkaJSMetadataNotLoaded extends KafkaJSError {
 }
 
 export class KafkaJSTopicMetadataNotLoaded extends KafkaJSMetadataNotLoaded {
-  readonly topic: string;
+  readonly topic: string
   constructor(e: Error | string, metadata?: KafkaJSTopicMetadataNotLoadedMetadata)
 }
 
 export class KafkaJSStaleTopicMetadataAssignment extends KafkaJSError {
-  readonly topic: string;
-  readonly unknownPartitions: number;
+  readonly topic: string
+  readonly unknownPartitions: number
   constructor(e: Error | string, metadata?: KafkaJSStaleTopicMetadataAssignmentMetadata)
 }
 
 export class KafkaJSServerDoesNotSupportApiKey extends KafkaJSNonRetriableError {
-  readonly apiKey: number;
+  readonly apiKey: number
   readonly apiName: string
   constructor(e: Error | string, metadata?: KafkaJSServerDoesNotSupportApiKeyMetadata)
 }
@@ -1050,7 +1240,7 @@ export class KafkaJSUnsupportedMagicByteInMessageSet extends KafkaJSError {
 }
 
 export class KafkaJSDeleteGroupsError extends KafkaJSError {
-  readonly groups: DeleteGroupsResult[];
+  readonly groups: DeleteGroupsResult[]
   constructor(e: Error | string, groups?: KafkaJSDeleteGroupsErrorGroups[])
 }
 
@@ -1064,15 +1254,14 @@ export interface KafkaJSDeleteGroupsErrorGroups {
   error: KafkaJSError
 }
 
-
 export interface KafkaJSDeleteTopicRecordsErrorTopic {
-  topic: string,
+  topic: string
   partitions: KafkaJSDeleteTopicRecordsErrorPartition[]
 }
 
 export interface KafkaJSDeleteTopicRecordsErrorPartition {
-  partition: number;
-  offset: string;
+  partition: number
+  offset: string
   error: KafkaJSError
 }
 

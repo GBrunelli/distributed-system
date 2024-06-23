@@ -1,5 +1,4 @@
 const createRetry = require('../retry')
-const flatten = require('../utils/flatten')
 const waitFor = require('../utils/waitFor')
 const groupBy = require('../utils/groupBy')
 const createConsumer = require('../consumer')
@@ -130,6 +129,37 @@ module.exports = ({
       throw new KafkaJSNonRetriableError(
         'Invalid topics array, it cannot have multiple entries for the same topic'
       )
+    }
+
+    for (const { topic, configEntries } of topics) {
+      if (configEntries == null) {
+        continue
+      }
+
+      if (!Array.isArray(configEntries)) {
+        throw new KafkaJSNonRetriableError(
+          `Invalid configEntries for topic "${topic}", must be an array`
+        )
+      }
+
+      configEntries.forEach((entry, index) => {
+        if (typeof entry !== 'object' || entry == null) {
+          throw new KafkaJSNonRetriableError(
+            `Invalid configEntries for topic "${topic}". Entry ${index} must be an object`
+          )
+        }
+
+        for (const requiredProperty of ['name', 'value']) {
+          if (
+            !Object.prototype.hasOwnProperty.call(entry, requiredProperty) ||
+            typeof entry[requiredProperty] !== 'string'
+          ) {
+            throw new KafkaJSNonRetriableError(
+              `Invalid configEntries for topic "${topic}". Entry ${index} must have a valid "${requiredProperty}" property`
+            )
+          }
+        }
+      })
     }
 
     const retrier = createRetry(retry)
@@ -377,30 +407,21 @@ module.exports = ({
    * Note: set either topic or topics but not both.
    *
    * @param {string} groupId
-   * @param {string} topic - deprecated, use the `topics` parameter. Topic to fetch offsets for.
    * @param {string[]} topics - list of topics to fetch offsets for, defaults to `[]` which fetches all topics for `groupId`.
    * @param {boolean} [resolveOffsets=false]
    * @return {Promise}
    */
-  const fetchOffsets = async ({ groupId, topic, topics, resolveOffsets = false }) => {
+  const fetchOffsets = async ({ groupId, topics, resolveOffsets = false }) => {
     if (!groupId) {
       throw new KafkaJSNonRetriableError(`Invalid groupId ${groupId}`)
     }
 
-    if (!topic && !topics) {
+    if (!topics) {
       topics = []
     }
 
-    if (!topic && !Array.isArray(topics)) {
-      throw new KafkaJSNonRetriableError(`Expected topic or topics array to be set`)
-    }
-
-    if (topic && topics) {
-      throw new KafkaJSNonRetriableError(`Either topic or topics must be set, not both`)
-    }
-
-    if (topic) {
-      topics = [topic]
+    if (!Array.isArray(topics)) {
+      throw new KafkaJSNonRetriableError('Expected topics array to be set')
     }
 
     const coordinator = await cluster.findGroupCoordinator({ groupId })
@@ -445,7 +466,7 @@ module.exports = ({
       )
     }
 
-    const result = consumerOffsets.map(({ topic, partitions }) => {
+    return consumerOffsets.map(({ topic, partitions }) => {
       const completePartitions = partitions.map(({ partition, offset, metadata }) => ({
         partition,
         offset,
@@ -454,12 +475,6 @@ module.exports = ({
 
       return { topic, partitions: completePartitions }
     })
-
-    if (topic) {
-      return result.pop().partitions
-    } else {
-      return result
-    }
   }
 
   /**
@@ -750,67 +765,6 @@ module.exports = ({
   }
 
   /**
-   * @deprecated - This method was replaced by `fetchTopicMetadata`. This implementation
-   * is limited by the topics in the target group, so it can't fetch all topics when
-   * necessary.
-   *
-   * Fetch metadata for provided topics.
-   *
-   * If no topics are provided fetch metadata for all topics of which we are aware.
-   * @see https://kafka.apache.org/protocol#The_Messages_Metadata
-   *
-   * @param {Object} [options]
-   * @param {string[]} [options.topics]
-   * @return {Promise<TopicsMetadata>}
-   *
-   * @typedef {Object} TopicsMetadata
-   * @property {Array<TopicMetadata>} topics
-   *
-   * @typedef {Object} TopicMetadata
-   * @property {String} name
-   * @property {Array<PartitionMetadata>} partitions
-   *
-   * @typedef {Object} PartitionMetadata
-   * @property {number} partitionErrorCode Response error code
-   * @property {number} partitionId Topic partition id
-   * @property {number} leader  The id of the broker acting as leader for this partition.
-   * @property {Array<number>} replicas The set of all nodes that host this partition.
-   * @property {Array<number>} isr The set of nodes that are in sync with the leader for this partition.
-   */
-  const getTopicMetadata = async options => {
-    const { topics } = options || {}
-
-    if (topics) {
-      await Promise.all(
-        topics.map(async topic => {
-          if (!topic) {
-            throw new KafkaJSNonRetriableError(`Invalid topic ${topic}`)
-          }
-
-          try {
-            await cluster.addTargetTopic(topic)
-          } catch (e) {
-            e.message = `Failed to add target topic ${topic}: ${e.message}`
-            throw e
-          }
-        })
-      )
-    }
-
-    await cluster.refreshMetadataIfNecessary()
-    const targetTopics = topics || [...cluster.targetTopics]
-
-    return {
-      topics: await Promise.all(
-        targetTopics.map(async topic => ({
-          name: topic,
-          partitions: cluster.findTopicPartitionMetadata(topic),
-        }))
-      ),
-    }
-  }
-
-  /**
    * Fetch metadata for provided topics.
    *
    * If no topics are provided fetch metadata for all topics.
@@ -1006,19 +960,19 @@ module.exports = ({
           )
         )
 
-        const errors = flatten(
-          res.map(({ results }) =>
+        const errors = res
+          .flatMap(({ results }) =>
             results.map(({ groupId, errorCode, error }) => {
               return { groupId, errorCode, error }
             })
           )
-        ).filter(({ errorCode }) => errorCode !== 0)
+          .filter(({ errorCode }) => errorCode !== 0)
 
         clonedGroupIds = errors.map(({ groupId }) => groupId)
 
         if (errors.length > 0) throw new KafkaJSDeleteGroupsError('Error in DeleteGroups', errors)
 
-        results = flatten(res.map(({ results }) => results))
+        results = res.flatMap(({ results }) => results)
 
         return results
       } catch (e) {
@@ -1057,7 +1011,7 @@ module.exports = ({
       partitions.map(p => p.partition)
     )
 
-    const partitionsFound = flatten(values(partitionsByBroker))
+    const partitionsFound = values(partitionsByBroker).flat()
     const topicOffsets = await fetchTopicOffsets(topic)
 
     const leaderNotFoundErrors = []
@@ -1457,6 +1411,147 @@ module.exports = ({
     })
   }
 
+  /**
+   * Alter the replicas partitions are assigned to for a topic
+   * @param {Object} request
+   * @param {import("../../types").IPartitionReassignment[]} request.topics topics and the paritions to be reassigned
+   * @param {number} [request.timeout]
+   * @returns {Promise}
+   */
+  const alterPartitionReassignments = async ({ topics, timeout }) => {
+    if (!topics || !Array.isArray(topics)) {
+      throw new KafkaJSNonRetriableError(`Invalid topics array ${topics}`)
+    }
+
+    if (topics.filter(({ topic }) => typeof topic !== 'string').length > 0) {
+      throw new KafkaJSNonRetriableError(
+        'Invalid topics array, the topic names have to be a valid string'
+      )
+    }
+
+    const topicNames = new Set(topics.map(({ topic }) => topic))
+    if (topicNames.size < topics.length) {
+      throw new KafkaJSNonRetriableError(
+        'Invalid topics array, it cannot have multiple entries for the same topic'
+      )
+    }
+
+    for (const { topic, partitionAssignment } of topics) {
+      if (!partitionAssignment || !Array.isArray(partitionAssignment)) {
+        throw new KafkaJSNonRetriableError(
+          `Invalid partitions array: ${partitionAssignment} for topic: ${topic}`
+        )
+      }
+
+      for (const { partition, replicas } of partitionAssignment) {
+        if (
+          partition === null ||
+          partition === undefined ||
+          typeof partition !== 'number' ||
+          partition < 0
+        ) {
+          throw new KafkaJSNonRetriableError(
+            `Invalid partitions index: ${partition} for topic: ${topic}`
+          )
+        }
+
+        if (!replicas || !Array.isArray(replicas)) {
+          throw new KafkaJSNonRetriableError(
+            `Invalid replica assignment: ${replicas} for topic: ${topic} on partition: ${partition}`
+          )
+        }
+
+        if (replicas.filter(replica => typeof replica !== 'number' || replica < 0).length >= 1) {
+          throw new KafkaJSNonRetriableError(
+            `Invalid replica assignment: ${replicas} for topic: ${topic} on partition: ${partition}. Replicas must be a non negative number`
+          )
+        }
+      }
+    }
+
+    const retrier = createRetry(retry)
+
+    return retrier(async (bail, retryCount, retryTime) => {
+      try {
+        await cluster.refreshMetadata()
+        const broker = await cluster.findControllerBroker()
+        await broker.alterPartitionReassignments({ topics, timeout })
+      } catch (e) {
+        if (e.type === 'NOT_CONTROLLER') {
+          logger.warn('Could not reassign partitions', { error: e.message, retryCount, retryTime })
+          throw e
+        }
+
+        bail(e)
+      }
+    })
+  }
+
+  /**
+   * List the partition reassignments in progress.
+   * If a partition is not going through a reassignment, its AddingReplicas and RemovingReplicas fields will simply be empty.
+   * If a partition doesn't exist, no response will be returned for it.
+   * @param {Object} request
+   * @param {import("../../types").TopicPartitions[]} request.topics topics and the paritions to be returned, if this is null will return all the topics.
+   * @param {number} [request.timeout]
+   * @returns {Promise<import("../../types").ListPartitionReassignmentsResponse>}
+   */
+  const listPartitionReassignments = async ({ topics = null, timeout }) => {
+    if (topics) {
+      if (!Array.isArray(topics)) {
+        throw new KafkaJSNonRetriableError(`Invalid topics array ${topics}`)
+      }
+
+      if (topics.filter(({ topic }) => typeof topic !== 'string').length > 0) {
+        throw new KafkaJSNonRetriableError(
+          'Invalid topics array, the topic names have to be a valid string'
+        )
+      }
+
+      const topicNames = new Set(topics.map(({ topic }) => topic))
+      if (topicNames.size < topics.length) {
+        throw new KafkaJSNonRetriableError(
+          'Invalid topics array, it cannot have multiple entries for the same topic'
+        )
+      }
+
+      for (const { topic, partitions } of topics) {
+        if (!partitions || !Array.isArray(partitions)) {
+          throw new KafkaJSNonRetriableError(
+            `Invalid partition array: ${partitions} for topic: ${topic}`
+          )
+        }
+
+        if (
+          partitions.filter(partition => typeof partition !== 'number' || partition < 0).length >= 1
+        ) {
+          throw new KafkaJSNonRetriableError(
+            `Invalid partition array: ${partitions} for topic: ${topic}. The partition indices have to be a valid number greater than 0.`
+          )
+        }
+      }
+    }
+
+    const retrier = createRetry(retry)
+
+    return retrier(async (bail, retryCount, retryTime) => {
+      try {
+        await cluster.refreshMetadata()
+        const broker = await cluster.findControllerBroker()
+        const response = await broker.listPartitionReassignments({ topics, timeout })
+
+        return { topics: response.topics }
+      } catch (e) {
+        if (e.type === 'NOT_CONTROLLER') {
+          logger.warn('Could not reassign partitions', { error: e.message, retryCount, retryTime })
+          throw e
+        }
+
+        bail(e)
+      }
+    })
+  }
+
   /** @type {import("../../types").Admin["on"]} */
   const on = (eventName, listener) => {
     if (!eventNames.includes(eventName)) {
@@ -1486,7 +1581,6 @@ module.exports = ({
     createTopics,
     deleteTopics,
     createPartitions,
-    getTopicMetadata,
     fetchTopicMetadata,
     describeCluster,
     events,
@@ -1506,5 +1600,7 @@ module.exports = ({
     deleteAcls,
     createAcls,
     deleteTopicRecords,
+    alterPartitionReassignments,
+    listPartitionReassignments,
   }
 }
