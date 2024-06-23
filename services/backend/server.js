@@ -44,22 +44,14 @@ const consumer = kafka.consumer({ groupId: "my-group" });
 
 const runKafka = async () => {
     try {
-        console.log("Tentando conectar ao Kafka Producer...");
         await producer.connect();
-        console.log("Conectado ao Kafka Producer.");
-
-        console.log("Tentando conectar ao Kafka Consumer...");
         await consumer.connect();
-        console.log("Conectado ao Kafka Consumer.");
-
-        console.log("Tentando se inscrever no tópico...");
         await consumer.subscribe({
             topic: "fila-requisicoes",
             fromBeginning: true,
         });
-        console.log("Inscrição no tópico concluída.");
 
-        consumer.run({
+        await consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
                 console.log({
                     partition,
@@ -69,7 +61,7 @@ const runKafka = async () => {
             },
         });
 
-        console.log("Conectado ao Kafka e consumidores iniciados.");
+        console.log("Conectado ao Kafka e consumidores iniciados");
     } catch (err) {
         console.error("Erro ao conectar ao Kafka", err);
     }

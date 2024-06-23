@@ -1,9 +1,37 @@
-provisioning:
-  enabled: true
-  topics:
-    - name: request
-      partitions: 1
-      replicationFactor: 1
-    - name: response
-      partitions: 1
-      replicationFactor: 1
+# provisioning:
+#   enabled: true
+#   topics:
+#     - name: request
+#       partitions: 1
+#       replicationFactor: 1
+#     - name: response
+#       partitions: 1
+#       replicationFactor: 1
+
+replicaCount: 1
+
+image:
+    repository: wurstmeister/kafka
+    tag: "2.12-2.3.0"
+    pullPolicy: IfNotPresent
+
+service:
+    type: ClusterIP
+    port: 9092
+
+persistence:
+    enabled: false
+    storageClass: ""
+    accessModes:
+        - ReadWriteOnce
+    size: 8Gi
+
+config:
+    kafka:
+        ZOOKEEPER_CONNECT: "zookeeper:2181"
+        KAFKA_LISTENERS: PLAINTEXT://:9092
+        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+        KAFKA_LOG_RETENTION_HOURS: 168
+        KAFKA_MESSAGE_MAX_BYTES: 1000012
+    zookeeper:
+        ZOO_PORT: 2181
