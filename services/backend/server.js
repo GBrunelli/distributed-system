@@ -29,7 +29,7 @@ pgClient
 
 const kafka = new Kafka({
     clientId: "my-app",
-    brokers: ["localhost:9092"],
+    brokers: ["kafka.kafka.svc.cluster.local:9092"],
 });
 
 const producer = kafka.producer();
