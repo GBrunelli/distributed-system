@@ -16,7 +16,7 @@ const port = 5000;
 
 const pgClient = new Client({
     user: "postgres",
-    host: "localhost",
+    host: "postgresql.postgresql.svc.cluster.local",
     database: "distribuidos",
     password: "helloworld",
     port: 5432,
