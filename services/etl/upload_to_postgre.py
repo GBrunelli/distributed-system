@@ -97,7 +97,7 @@ class MedicamentoDisponivel(Base):
     medicamento = relationship("Medicamento", back_populates="medicamentos_disponiveis")
 
 def main():
-    engine = create_engine('postgresql+psycopg2://postgres:helloworld@localhost/distribuidos')
+    engine = create_engine('postgresql+psycopg2://postgres:helloworld@postgresql-service.default.svc.cluster.local:5432/distribuidos')
     Base.metadata.create_all(engine)
 
     Session = sessionmaker(bind=engine)

@@ -1,10 +1,10 @@
 global:
-  postgresql:
-    auth:
-      postgresPassword: "SuperSecretPGAdminPa55word!"
-      username: "dvdrental_admin"
-      password: "notAsSecretU5erPa55word"
-      database: "dvdrental"
+    postgresql:
+        auth:
+            postgresPassword: "helloworld"
+            username: "postgres"
+            password: "helloworld"
+            database: "distribuidos"
 primary:
-  persistence:
-    enabled: false
+    persistence:
+        enabled: false
