@@ -33,12 +33,6 @@ const kafka = new Kafka({
     clientId: "my-app",
     brokers: ["kafka.kafka.svc.cluster.local:9092"],
     logLevel: logLevel.DEBUG,
-    ssl: true,
-    sasl: {
-        mechanism: "plain",
-        username: "user",
-        password: "vSaWk098W", // sua senha decodificada
-    },
 });
 
 const producer = kafka.producer();
