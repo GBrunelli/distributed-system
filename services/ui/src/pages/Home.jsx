@@ -1,8 +1,64 @@
 import React from "react";
-import Header from "../components/Header/Header";
-import ItemsTable from "../components/ItemsTable/ItemsTable";
-import { Link } from "react-router-dom";
+import axios from "axios";
 import TemplatePage from "./TemplatePage";
+
+const nomes = [
+    "Ana",
+    "Bruno",
+    "Carlos",
+    "Diana",
+    "Eduardo",
+    "Fernanda",
+    "Gustavo",
+    "Helena",
+    "Igor",
+    "Julia",
+];
+const sobrenomes = [
+    "Silva",
+    "Santos",
+    "Oliveira",
+    "Souza",
+    "Rodrigues",
+    "Ferreira",
+    "Almeida",
+    "Costa",
+    "Gomes",
+    "Martins",
+];
+
+const generateRandomName = () => {
+    const nome = nomes[Math.floor(Math.random() * nomes.length)];
+    const sobrenome = sobrenomes[Math.floor(Math.random() * sobrenomes.length)];
+    return `${nome} ${sobrenome}`;
+};
+
+const generateMockData = async () => {
+    const mockPacientes = [];
+    const mockMedicos = [];
+
+    for (let i = 0; i < 20; i++) {
+        await axios.post("http://localhost:30081/pacientes", {
+            nome: generateRandomName(),
+            cpf: `${Math.floor(Math.random() * 1000000000000)}`,
+            data_nascimento: new Date(1990 + i, 0, 1)
+                .toISOString()
+                .split("T")[0],
+            endereco: `Endereço ${i}`,
+            telefone: `99999-999${i}`,
+        });
+
+        await axios.post("http://localhost:30081/medicos", {
+            nome: `Dr. ${generateRandomName()}`,
+            crm: `${Math.floor(Math.random() * 1000000)}`,
+            especialidade: `Especialidade ${i % 5}`,
+            telefone: `88888-888${i}`,
+            email: `medico${i}@example.com`,
+        });
+    }
+
+    alert("Dados mock de pacientes e médicos foram inseridos com sucesso!");
+};
 
 const Home = () => {
     return (
@@ -26,6 +82,15 @@ const Home = () => {
                             <li>Vitor Caetano Brustolin - 11795589</li>
                             <li>Rafael Corona - 4769989</li>
                         </ul>
+                    </div>
+
+                    <div>
+                        <button
+                            onClick={generateMockData}
+                            className="px-4 py-2 text-white bg-blue-500 rounded"
+                        >
+                            Preencher Dados Mock
+                        </button>
                     </div>
                 </div>
             </div>

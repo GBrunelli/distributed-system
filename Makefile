@@ -6,7 +6,7 @@ start-kind:
 start-argocd:
 	@echo "Starting ArgoCD..."
 	@if [ -f "infrastructure/modules/argo-cd/charts/argo-cd-5.16.1.tgz" ]; then\
-		echo "dependencies already exist";\
+		echo "dependencies already exists";\
 	else\
         helm dependency build ./infrastructure/modules/argo-cd;\
     fi

@@ -17,7 +17,7 @@ const Medicamentos = () => {
             .catch((error) => {
                 console.error("Erro ao buscar medicamentos:", error);
             });
-    }, []);
+    }, [medicamentos]);
 
     const fields = [
         { id: "nome", label: "Nome", type: "text" },
@@ -77,6 +77,7 @@ const Medicamentos = () => {
                 onAdd={handleAdd}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                getId={(item) => item.id_medicamento}
             />
         </TemplatePage>
     );
