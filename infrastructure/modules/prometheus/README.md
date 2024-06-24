@@ -6,8 +6,8 @@ This chart bootstraps a [Prometheus](https://prometheus.io/) deployment on a [Ku
 
 ## Prerequisites
 
-- Kubernetes 1.19+
-- Helm 3.7+
+-   Kubernetes 1.19+
+-   Helm 3.7+
 
 ## Get Repository Info
 
@@ -34,10 +34,10 @@ _See [helm install](https://helm.sh/docs/helm/helm_install/) for command documen
 
 By default this chart installs additional, dependent charts:
 
-- [alertmanager](https://github.com/prometheus-community/helm-charts/tree/main/charts/alertmanager)
-- [kube-state-metrics](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-state-metrics)
-- [prometheus-node-exporter](https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-node-exporter)
-- [prometheus-pushgateway](https://github.com/walker-tom/helm-charts/tree/main/charts/prometheus-pushgateway)
+-   [alertmanager](https://github.com/prometheus-community/helm-charts/tree/main/charts/alertmanager)
+-   [kube-state-metrics](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-state-metrics)
+-   [prometheus-node-exporter](https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-node-exporter)
+-   [prometheus-pushgateway](https://github.com/walker-tom/helm-charts/tree/main/charts/prometheus-pushgateway)
 
 To disable the dependency during installation, set `alertmanager.enabled`, `kube-state-metrics.enabled`, `prometheus-node-exporter.enabled` and `prometheus-pushgateway.enabled` to `false`.
 
@@ -113,13 +113,13 @@ kubectl delete deploy,sts -l app.kubernetes.io/name=prometheus
 The Kubernetes labels have been updated to follow [Helm 3 label and annotation best practices](https://helm.sh/docs/chart_best_practices/labels/).
 Specifically, labels mapping is listed below:
 
-| OLD                | NEW                          |
-|--------------------|------------------------------|
-|heritage            | app.kubernetes.io/managed-by |
-|chart               | helm.sh/chart                |
-|[container version] | app.kubernetes.io/version    |
-|app                 | app.kubernetes.io/name       |
-|release             | app.kubernetes.io/instance   |
+| OLD                 | NEW                          |
+| ------------------- | ---------------------------- |
+| heritage            | app.kubernetes.io/managed-by |
+| chart               | helm.sh/chart                |
+| [container version] | app.kubernetes.io/version    |
+| app                 | app.kubernetes.io/name       |
+| release             | app.kubernetes.io/instance   |
 
 Therefore, depending on the way you've configured the chart, the previous StatefulSet or Deployment need to be deleted before upgrade.
 
@@ -240,37 +240,37 @@ Assuming you have an existing release of the prometheus chart, named `prometheus
 
 1. Update the `prometheus-old` release. Disable scraping on every component besides the prometheus server, similar to the configuration below:
 
-  ```yaml
-  alertmanager:
+```yaml
+alertmanager:
     enabled: false
-  alertmanagerFiles:
+alertmanagerFiles:
     alertmanager.yml: ""
-  kubeStateMetrics:
+kubeStateMetrics:
     enabled: false
-  nodeExporter:
+nodeExporter:
     enabled: false
-  pushgateway:
+pushgateway:
     enabled: false
-  server:
+server:
     extraArgs:
-      storage.local.retention: 720h
-  serverFiles:
+        storage.local.retention: 720h
+serverFiles:
     alerts: ""
     prometheus.yml: ""
     rules: ""
-  ```
+```
 
 1. Deploy a new release of the chart with version 5.0+ using prometheus 2.x. In the values.yaml set the scrape config as usual, and also add the `prometheus-old` instance as a remote-read target.
 
-   ```yaml
-    prometheus.yml:
-      ...
-      remote_read:
-      - url: http://prometheus-old/api/v1/read
-      ...
-   ```
+    ```yaml
+     prometheus.yml:
+       ...
+       remote_read:
+       - url: http://prometheus-old/api/v1/read
+       ...
+    ```
 
-   Old data will be available when you query the new prometheus instance.
+    Old data will be available when you query the new prometheus instance.
 
 ## Configuration
 
@@ -290,10 +290,10 @@ In order to get prometheus to scrape pods, you must add annotations to the pods 
 
 ```yaml
 metadata:
-  annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/path: /metrics
-    prometheus.io/port: "8080"
+    annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8000"
 ```
 
 You should adjust `prometheus.io/path` based on the URL that your pod serves metrics from. `prometheus.io/port` should be set to the port that your pod serves metrics from. Note that the values for `prometheus.io/scrape` and `prometheus.io/port` must be enclosed in double quotes.
@@ -353,24 +353,24 @@ Include the secret's name, along with the desired hostnames, in the alertmanager
 
 ```yaml
 server:
-  ingress:
-    ## If true, Prometheus server Ingress will be created
-    ##
-    enabled: true
+    ingress:
+        ## If true, Prometheus server Ingress will be created
+        ##
+        enabled: true
 
-    ## Prometheus server Ingress hostnames
-    ## Must be provided if Ingress is enabled
-    ##
-    hosts:
-      - prometheus.domain.com
-
-    ## Prometheus server Ingress TLS configuration
-    ## Secrets must be manually created in the namespace
-    ##
-    tls:
-      - secretName: prometheus-server-tls
+        ## Prometheus server Ingress hostnames
+        ## Must be provided if Ingress is enabled
+        ##
         hosts:
-          - prometheus.domain.com
+            - prometheus.domain.com
+
+        ## Prometheus server Ingress TLS configuration
+        ## Secrets must be manually created in the namespace
+        ##
+        tls:
+            - secretName: prometheus-server-tls
+              hosts:
+                  - prometheus.domain.com
 ```
 
 ### NetworkPolicy

@@ -80,7 +80,7 @@ get-info:
 	kubectl get secret --namespace monitoring grafana -o jsonpath="{.data.admin-password}" | base64 --decode; echo
 
 # Targets para iniciar e parar todo o sistema
-up: start-kind start-argocd start-apps start-monitoring forward-ports get-info
+up: start-kind start-argocd start-apps start-monitoring get-info
 down: stop-kind
 
 .PHONY: up down start-kind start-argocd start-apps start-monitoring forward-ports stop-kind build-images get-info create-prometheus-pvc
