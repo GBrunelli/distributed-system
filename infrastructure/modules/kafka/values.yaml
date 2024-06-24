@@ -1,3 +1,4 @@
+# Uncomment the provisioning section if you want to pre-create topics
 # provisioning:
 #   enabled: true
 #   topics:
@@ -24,13 +25,13 @@ persistence:
     storageClass: ""
     accessModes:
         - ReadWriteOnce
-    size: 8Gi
+    size: 1Gi
 
 config:
     kafka:
         ZOOKEEPER_CONNECT: "zookeeper.kafka.svc.cluster.local:2181"
         KAFKA_LISTENERS: PLAINTEXT://:9092
-        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka.kafka.svc.cluster.local:9092
         KAFKA_LOG_RETENTION_HOURS: 168
         KAFKA_MESSAGE_MAX_BYTES: 1000012
     zookeeper:
