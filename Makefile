@@ -99,8 +99,8 @@ stop-kind:
 # Encaminhar portas para acessar o ArgoCD, Grafana
 forward-ports:
 	@echo "Forwarding Ports..."
-	-kubectl -n argocd port-forward svc/argo-cd-argocd-server 8080:443 &
-	-kubectl -n monitoring port-forward svc/grafana 8081:80
+	-kubectl -n argocd port-forward svc/argo-cd-argocd-server 5012:443 &
+	-kubectl -n monitoring port-forward svc/grafana 6012:80
 	
 # Obter informações de acesso (senhas) para ArgoCD e Grafana
 get-info:

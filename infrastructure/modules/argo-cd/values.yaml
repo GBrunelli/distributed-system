@@ -1,9 +1,9 @@
 argo-cd:
-  server:
-    config:
-      admin.enabled: "true"
+    server:
+        config:
+            admin.enabled: "true"
 
-  repoServer:
-    env: 
-      - name: ARGOCD_EXEC_TIMEOUT
-        value: 5m30s
+    repoServer:
+        env:
+            - name: ARGOCD_EXEC_TIMEOUT
+              value: 5m30s

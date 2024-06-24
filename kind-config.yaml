@@ -3,20 +3,17 @@ apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
     - role: control-plane
       extraPortMappings:
-          - containerPort: 30080
-            hostPort: 30080
-            protocol: TCP
           - containerPort: 30081
             hostPort: 30081
             protocol: TCP
-          - containerPort: 8080
-            hostPort: 8080
+          - containerPort: 5012
+            hostPort: 5012
             protocol: TCP
-          - containerPort: 8081
-            hostPort: 8081
+          - containerPort: 6012
+            hostPort: 6012
             protocol: TCP
-          - containerPort: 3000
-            hostPort: 3000
+          - containerPort: 7012
+            hostPort: 7012
             protocol: TCP
     #   kubeadmConfigPatches:
     #       - |
