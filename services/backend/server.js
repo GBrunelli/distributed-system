@@ -52,10 +52,10 @@ const consumer = kafka.consumer({ groupId: "my-group" });
 const runKafka = async () => {
     try {
         await consumer.connect();
-        await consumer.subscribe({
-            topic: "fila-requisicoes",
-            fromBeginning: true,
-        });
+        // await consumer.subscribe({
+        //     topic: "fila-requisicoes",
+        //     fromBeginning: true,
+        // });
 
         await consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
