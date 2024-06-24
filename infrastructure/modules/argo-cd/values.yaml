@@ -7,8 +7,8 @@ argo-cd:
                 memory: "512Mi"
                 cpu: "250m"
             limits:
-                memory: "1Gi"
-                cpu: "500m"
+                memory: "512Mi"
+                cpu: "250m"
 
     repoServer:
         env:
@@ -19,8 +19,8 @@ argo-cd:
                 memory: "512Mi"
                 cpu: "250m"
             limits:
-                memory: "1Gi"
-                cpu: "500m"
+                memory: "512Mi"
+                cpu: "250m"
 
     controller:
         resources:
@@ -28,5 +28,5 @@ argo-cd:
                 memory: "512Mi"
                 cpu: "250m"
             limits:
-                memory: "1Gi"
-                cpu: "500m"
+                memory: "512Mi"
+                cpu: "250m"

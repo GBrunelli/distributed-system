@@ -112,7 +112,7 @@ server:
       cpu: "200m"
   persistentVolume:
     enabled: true
-    size: 1Gi
+    size: 512Mi
     storageClass: standard
   rule_files:
     - /etc/prometheus/rules/prometheus.rules
