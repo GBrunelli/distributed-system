@@ -1,0 +1,22 @@
+datasources:
+    datasources.yaml:
+        apiVersion: 1
+        datasources:
+            - name: Prometheus
+              type: prometheus
+              url: http://prometheus-server
+              access: proxy
+              isDefault: true
+
+persistence:
+    enabled: true
+    storageClassName: "standard"
+    accessModes:
+        - ReadWriteOnce
+    size: 1Gi # Reduzido para 1Gi
+
+service:
+    type: LoadBalancer
+
+ingress:
+    enabled: false

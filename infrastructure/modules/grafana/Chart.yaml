@@ -1,0 +1,6 @@
+apiVersion: 2
+name: grafana
+description: A Helm chart for grafana
+type: application
+version: 6.17.4
+appVersion: 7.5.10

@@ -9,9 +9,28 @@ nodes:
           - containerPort: 30081
             hostPort: 30081
             protocol: TCP
+          - containerPort: 8080
+            hostPort: 8080
+            protocol: TCP
+          - containerPort: 8081
+            hostPort: 8081
+            protocol: TCP
+          - containerPort: 3000
+            hostPort: 3000
+            protocol: TCP
       kubeadmConfigPatches:
           - |
               kind: InitConfiguration
+              nodeRegistration:
+                kubeletExtraArgs:
+                  "eviction-hard": "memory.available<200Mi,nodefs.available<1Gi,imagefs.available<1Gi"
+                  "kube-reserved": "cpu=100m,memory=128Mi"
+                  "system-reserved": "cpu=100m,memory=128Mi"
+                  "enforce-node-allocatable": "pods"
+    - role: worker
+      kubeadmConfigPatches:
+          - |
+              kind: JoinConfiguration
               nodeRegistration:
                 kubeletExtraArgs:
                   "eviction-hard": "memory.available<200Mi,nodefs.available<1Gi,imagefs.available<1Gi"
