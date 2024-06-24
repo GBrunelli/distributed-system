@@ -1,39 +1,16 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-    name: node-app-deployment
-    labels:
-        app: node-app
-spec:
-    replicas: 3
-    selector:
-        matchLabels:
-            app: node-app
-    template:
-        metadata:
-            labels:
-                app: node-app
-        spec:
-            containers:
-                - name: node-app
-                  image: opaulosoares/dist_system_ui:latest
-                  ports:
-                      - containerPort: 5000
-                  env:
-                      - name: NODE_ENV
-                        value: "production"
-
----
 apiVersion: v1
 kind: Service
 metadata:
+    labels:
+        argocd.argoproj.io/instance: ui
     name: node-app-service
+    namespace: ui
 spec:
+    ports:
+        - nodePort: 7012
+          port: 80
+          protocol: TCP
+          targetPort: 5000
     selector:
         app: node-app
-    ports:
-        - protocol: TCP
-          port: 80
-          targetPort: 5000
-          nodePort: 7012
     type: NodePort

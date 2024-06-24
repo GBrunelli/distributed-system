@@ -85,6 +85,7 @@ start-monitoring:
 	kubectl wait --for=condition=ready --timeout=600s pod -l app.kubernetes.io/name=grafana -n monitoring --v=6
 
 # Construir imagens Docker para os serviços
+# docker push opaulosoares/dist_system_ui:latest 
 build-images:
 	@echo "Building Images"
 	docker build -t opaulosoares/postgre_uploader:latest services/etl/.
