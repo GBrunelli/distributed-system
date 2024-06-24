@@ -5,6 +5,8 @@ nodes:
       extraPortMappings:
           - containerPort: 30081
             hostPort: 30081
+          - containerPort: 30012
+            hostPort: 30012
             protocol: TCP
           - containerPort: 5012
             hostPort: 5012
