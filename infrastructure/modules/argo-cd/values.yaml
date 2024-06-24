@@ -1,32 +1,9 @@
 argo-cd:
-    server:
-        config:
-            admin.enabled: "true"
-        resources:
-            requests:
-                memory: "512Mi"
-                cpu: "250m"
-            limits:
-                memory: "512Mi"
-                cpu: "250m"
+  server:
+    config:
+      admin.enabled: "true"
 
-    repoServer:
-        env:
-            - name: ARGOCD_EXEC_TIMEOUT
-              value: 5m30s
-        resources:
-            requests:
-                memory: "512Mi"
-                cpu: "250m"
-            limits:
-                memory: "512Mi"
-                cpu: "250m"
-
-    controller:
-        resources:
-            requests:
-                memory: "512Mi"
-                cpu: "250m"
-            limits:
-                memory: "512Mi"
-                cpu: "250m"
+  repoServer:
+    env: 
+      - name: ARGOCD_EXEC_TIMEOUT
+        value: 5m30s

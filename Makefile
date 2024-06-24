@@ -16,7 +16,7 @@ start-argocd:
 	--debug
 
 	sleep 5s
-	kubectl wait --for=condition=ready --timeout=300s pod -l app.kubernetes.io/name=argocd-server -n argocd --v=6
+	kubectl wait --for=condition=ready --timeout=500s pod -l app.kubernetes.io/name=argocd-server -n argocd --v=6
 
 # Iniciar e aplicar as configurações das aplicações
 start-apps:
