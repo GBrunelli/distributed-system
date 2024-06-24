@@ -12,6 +12,7 @@ start-argocd:
     fi
 	helm install argo-cd -n argocd \
 	--create-namespace ./infrastructure/modules/argo-cd \
+	--values ./infrastructure/modules/argo-cd/values.yaml \
 	--debug
 
 	sleep 5s
