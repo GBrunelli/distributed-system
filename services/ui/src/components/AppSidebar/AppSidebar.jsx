@@ -7,6 +7,7 @@ import {
     HiCollection,
     HiOfficeBuilding,
 } from "react-icons/hi";
+import { FaUserDoctor } from "react-icons/fa6";
 import { Sidebar } from "flowbite-react";
 
 const SidebarItem = ({ to, icon: Icon, children }) => {
@@ -39,13 +40,10 @@ function AppSidebar() {
                     <SidebarItem to="/" icon={HiHome}>
                         Home
                     </SidebarItem>
-                    <SidebarItem to="/prescricoes" icon={HiClipboardList}>
-                        Prescrições
-                    </SidebarItem>
                     <SidebarItem to="/pacientes" icon={HiUserGroup}>
                         Pacientes
                     </SidebarItem>
-                    <SidebarItem to="/medicos" icon={HiUserGroup}>
+                    <SidebarItem to="/medicos" icon={FaUserDoctor}>
                         Médicos
                     </SidebarItem>
                     <SidebarItem to="/medicamentos" icon={HiCollection}>

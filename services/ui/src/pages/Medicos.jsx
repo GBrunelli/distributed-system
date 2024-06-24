@@ -19,7 +19,7 @@ const Medicos = () => {
                 console.error("Erro ao buscar médicos:", error);
                 setLoading(false);
             });
-    }, []);
+    }, [medicos]);
 
     const handleAdd = (newItem) => {
         axios
@@ -78,6 +78,7 @@ const Medicos = () => {
                     onAdd={handleAdd}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    getId={(item) => item.id_medico}
                 />
             )}
         </TemplatePage>

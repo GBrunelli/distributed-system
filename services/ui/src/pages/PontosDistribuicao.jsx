@@ -8,6 +8,7 @@ const PontosDistribuicao = () => {
     const [pontosDistribuicao, setPontosDistribuicao] = useState([]);
 
     const fields = [
+        { id: "id_ponto", label: "Ponto ID", type: "number" },
         { id: "nome", label: "Nome", type: "text" },
         { id: "tipo", label: "Tipo", type: "text" },
         { id: "endereco", label: "Endereço", type: "text" },
@@ -23,7 +24,7 @@ const PontosDistribuicao = () => {
             .catch((error) => {
                 console.error("Erro ao buscar pontos de distribuição:", error);
             });
-    }, []);
+    }, [pontosDistribuicao]);
 
     const handleAdd = (newItem) => {
         axios
@@ -81,6 +82,7 @@ const PontosDistribuicao = () => {
                 onAdd={handleAdd}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                getId={(item) => item.id_ponto}
             />
         </TemplatePage>
     );

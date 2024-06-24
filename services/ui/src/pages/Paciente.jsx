@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import TemplatePage from "./TemplatePage";
 import TemplateDataDisplay from "./TemplateDataDisplay";
-import { FaUserDoctor } from "react-icons/fa6";
+import { HiUserGroup } from "react-icons/hi";
 import axios from "axios";
 
 const Paciente = () => {
@@ -18,7 +18,7 @@ const Paciente = () => {
 
     useEffect(() => {
         fetchPacientes();
-    }, []);
+    }, [paciente]);
 
     const fetchPacientes = async () => {
         try {
@@ -69,13 +69,14 @@ const Paciente = () => {
     };
 
     return (
-        <TemplatePage title="Pacientes" icon={<FaUserDoctor />}>
+        <TemplatePage title="Pacientes" icon={<HiUserGroup />}>
             <TemplateDataDisplay
                 fields={fields}
                 data={paciente}
                 onAdd={handleAdd}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                getId={(item) => item.id_paciente}
             />
         </TemplatePage>
     );

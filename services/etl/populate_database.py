@@ -1,5 +1,5 @@
 import pandas as pd
-from sqlalchemy import create_engine, Column, Integer, String, Date, Float, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Date, ForeignKey
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 import logging
 
@@ -53,19 +53,6 @@ class Medicamento(Base):
     fabricante_id = Column(Integer, ForeignKey('fabricante.id_fabricante'))
     data_registro_anvisa = Column(Date)
     codigo_anvisa = Column(String)
-    codigo_ggrem = Column(String)
-    classe_terapeutica = Column(String)
-    ean1 = Column(String)
-    ean2 = Column(String)
-    ean3 = Column(String)
-    status_produto = Column(String)
-    regime_preco = Column(String)
-    preco_minimo = Column(Float)
-    preco_maximo = Column(Float)
-    restricao_hospitalar = Column(String)
-    tarja = Column(String)
-    destinacao_comercial = Column(String)
-
     fabricante = relationship("Fabricante", back_populates="medicamentos")
     prescricao_medicamentos = relationship("PrescricaoMedicamento", back_populates="medicamento")
     medicamentos_disponiveis = relationship("MedicamentoDisponivel", back_populates="medicamento")
@@ -136,7 +123,7 @@ def create_entries(df):
 
         medicamentos = df.to_dict('records')
         for med in medicamentos:
-            fabricante_id = session.query(Fabricante.id_fabricante).filter(Fabricante.cnpj == med['CNPJ']).one_or_none()
+            fabricante_id = session.query(Fabricante.id_fabricante).filter(Fabricante.cnpj == med['CNPJ']).first()
             if fabricante_id:
                 # Replace NaT with None in 'data_registro_anvisa'
                 data_registro_anvisa = pd.to_datetime(med['REGISTRO'], errors='coerce')
@@ -148,19 +135,7 @@ def create_entries(df):
                     descricao=med['APRESENTAÇÃO'],
                     fabricante_id=fabricante_id.id_fabricante,
                     data_registro_anvisa=data_registro_anvisa,
-                    codigo_anvisa=med['CÓDIGO GGREM'],
-                    codigo_ggrem=med['CÓDIGO GGREM'],
-                    classe_terapeutica=med['CLASSE TERAPÊUTICA'],
-                    ean1=med['EAN 1'],
-                    ean2=med['EAN 2'],
-                    ean3=med['EAN 3'],
-                    status_produto=med['TIPO DE PRODUTO (STATUS DO PRODUTO)'],
-                    regime_preco=med['REGIME DE PREÇO'],
-                    preco_minimo=med['PF Sem Impostos'],
-                    preco_maximo=med['PMVG Sem Imposto'],
-                    restricao_hospitalar=med['RESTRIÇÃO HOSPITALAR'],
-                    tarja=med['TARJA'],
-                    destinacao_comercial=med['DESTINAÇÃO COMERCIAL']
+                    codigo_anvisa=med['CÓDIGO GGREM']
                 )
                 session.add(medicamento)
         session.commit()
@@ -179,7 +154,13 @@ if __name__ == "__main__":
     columns = [
         "SUBSTÂNCIA", "CNPJ", "LABORATÓRIO", "CÓDIGO GGREM", "REGISTRO", "EAN 1", "EAN 2", "EAN 3", "PRODUTO",
         "APRESENTAÇÃO", "CLASSE TERAPÊUTICA", "TIPO DE PRODUTO (STATUS DO PRODUTO)", "REGIME DE PREÇO",
-        "PF Sem Impostos", "PMVG Sem Imposto", "RESTRIÇÃO HOSPITALAR", "CAP", "CONFAZ 87", "ICMS 0%",
+        "PF Sem Impostos", "PF 0%", "PF 12%", "PF 12% ALC", "PF 17%", "PF 17% ALC", "PF 17,5%", 
+        "PF 17,5% ALC", "PF 18%", "PF 18% ALC", "PF 19%", "PF 19% ALC", "PF 19,5%", "PF 19,5% ALC",
+        "PF 20%", "PF 20% ALC", "PF 20,5%2", "PF 21%", "PF 21% ALC", "PF 22%", "PF 22% ALC",
+        "PMVG Sem Imposto", "PMVG 0%", "PMVG 12%", "PMVG 12% ALC", "PMVG 17%", "PMVG 17% ALC", "PMVG 17,5%",
+        "PMVG 17,5% ALC", "PMVG 18%", "PMVG 18% ALC", "PMVG 19%", "PMVG 19% ALC", "PMVG 19,5%", 
+        "PMVG 19,5% ALC", "PMVG 20%", "PMVG 20% ALC", "PMVG 20,5%", "PMVG 21%", "PMVG 21% ALC", 
+        "PMVG 22%", "PMVG 22% ALC", "RESTRIÇÃO HOSPITALAR", "CAP", "CONFAZ 87", "ICMS 0%",
         "ANÁLISE RECURSAL", "LISTA DE CONCESSÃO DE CRÉDITO TRIBUTÁRIO (PIS/COFINS)",
         "COMERCIALIZAÇÃO 2022", "TARJA", "DESTINAÇÃO COMERCIAL"
     ]

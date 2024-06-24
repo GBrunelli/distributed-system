@@ -8,7 +8,14 @@ import {
     HiChevronRight,
 } from "react-icons/hi";
 
-const TemplateDataDisplay = ({ fields, data, onAdd, onEdit, onDelete }) => {
+const TemplateDataDisplay = ({
+    fields,
+    data,
+    onAdd,
+    onEdit,
+    onDelete,
+    getId,
+}) => {
     const [showModal, setShowModal] = useState(false);
     const [currentItem, setCurrentItem] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
@@ -31,7 +38,7 @@ const TemplateDataDisplay = ({ fields, data, onAdd, onEdit, onDelete }) => {
             return acc;
         }, {});
         if (currentItem) {
-            onEdit(currentItem.id_paciente, newItem);
+            onEdit(getId(currentItem), newItem);
         } else {
             onAdd(newItem);
         }
@@ -76,17 +83,17 @@ const TemplateDataDisplay = ({ fields, data, onAdd, onEdit, onDelete }) => {
                     disabled={currentPage === 1}
                     className="mr-2"
                 >
-                    <HiChevronLeft className="mr-2" /> Previous
+                    <HiChevronLeft className="mr-2" /> Anterior
                 </Button>
                 <span>
-                    Page {currentPage} of {totalPages}
+                    Página {currentPage} de {totalPages}
                 </span>
                 <Button
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages}
                     className="ml-2"
                 >
-                    Next <HiChevronRight className="ml-2" />
+                    Próxima <HiChevronRight className="ml-2" />
                 </Button>
             </div>
             <Table striped={true}>
@@ -96,11 +103,11 @@ const TemplateDataDisplay = ({ fields, data, onAdd, onEdit, onDelete }) => {
                             {field.label}
                         </Table.HeadCell>
                     ))}
-                    <Table.HeadCell>Actions</Table.HeadCell>
+                    <Table.HeadCell>Ações</Table.HeadCell>
                 </Table.Head>
                 <Table.Body>
                     {paginatedData.map((item) => (
-                        <Table.Row key={item.id_paciente}>
+                        <Table.Row key={getId(item)}>
                             {fields.map((field) => (
                                 <Table.Cell key={field.id}>
                                     {item[field.id]}
@@ -109,15 +116,15 @@ const TemplateDataDisplay = ({ fields, data, onAdd, onEdit, onDelete }) => {
                             <Table.Cell>
                                 <Button.Group>
                                     <Button onClick={() => handleEdit(item)}>
-                                        <HiPencilAlt className="mr-2" /> Edit
+                                        <HiPencilAlt className="mr-2" /> Editar
                                     </Button>
                                     <Button
                                         color="red"
                                         onClick={() =>
-                                            handleDelete(item.id_paciente)
+                                            handleDelete(getId(item))
                                         }
                                     >
-                                        <HiTrash className="mr-2" /> Delete
+                                        <HiTrash className="mr-2" /> Deletar
                                     </Button>
                                 </Button.Group>
                             </Table.Cell>
@@ -128,7 +135,7 @@ const TemplateDataDisplay = ({ fields, data, onAdd, onEdit, onDelete }) => {
 
             <Modal show={showModal} onClose={() => setShowModal(false)}>
                 <Modal.Header>
-                    {currentItem ? "Edit Item" : "Add New Item"}
+                    {currentItem ? "Editar Item" : "Adicionar novo item"}
                 </Modal.Header>
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
@@ -149,7 +156,7 @@ const TemplateDataDisplay = ({ fields, data, onAdd, onEdit, onDelete }) => {
                             </div>
                         ))}
                         <Button type="submit" className="mt-4">
-                            {currentItem ? "Save Changes" : "Add Item"}
+                            {currentItem ? "Salvar mudanças" : "Adicionar"}
                         </Button>
                     </form>
                 </Modal.Body>
