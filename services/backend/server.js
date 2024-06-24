@@ -31,8 +31,13 @@ pgClient
 
 const kafka = new Kafka({
     clientId: "my-app",
-    brokers: ["kafka.kafka.svc.cluster.local:9092"],
-    logLevel: logLevel.DEBUG,
+    brokers: ["kafka.kafka.svc.cluster.local:9093"],
+    ssl: false,
+    sasl: {
+        mechanism: "plain",
+        username: "admin",
+        password: "admin-secret",
+    },
 });
 
 const producer = kafka.producer();
