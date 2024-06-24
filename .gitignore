@@ -1,2 +1,4 @@
 *.lock
 *.tgz
+
+.dependencies_installed

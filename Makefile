@@ -1,3 +1,32 @@
+# Diretórios dos projetos frontend e backend
+NODE_UI_PROJECT_DIR=services/ui
+NODE_BACKEND_PROJECT_DIR=services/backend
+
+# Arquivos de sinalização para frontend e backend
+FLAG_FILE_UI=$(NODE_UI_PROJECT_DIR)/node_modules/.dependencies_installed
+FLAG_FILE_BACKEND=$(NODE_BACKEND_PROJECT_DIR)/node_modules/.dependencies_installed
+
+# Target para instalar dependências do frontend
+install-frontend-dependencies:
+	@echo "Checking frontend dependencies in $(NODE_UI_PROJECT_DIR)"
+	cd $(NODE_UI_PROJECT_DIR) && npm install;
+
+# Target para instalar dependências do backend
+install-backend-dependencies:
+	@echo "Checking backend dependencies in $(NODE_BACKEND_PROJECT_DIR)"
+	cd $(NODE_BACKEND_PROJECT_DIR) && npm install;
+
+# Target para construir o frontend
+build-frontend:
+	@echo "Building frontend project in $(NODE_UI_PROJECT_DIR)"
+	cd $(NODE_UI_PROJECT_DIR) && npm run build
+
+check-tools:
+	@which helm > /dev/null || { echo "Helm is not installed. Please install Helm."; exit 1; }
+	@which kubectl > /dev/null || { echo "kubectl is not installed. Please install kubectl."; exit 1; }
+	@which kind > /dev/null || { echo "kind is not installed. Please install kind."; exit 1; }
+	@which docker > /dev/null || {echo "docker is not installed. Please install docker." exit 1;}
+
 # Criar cluster KIND com a configuração especificada
 start-kind:
 	kind create cluster --name cluster --config=kind-config.yaml
@@ -16,14 +45,14 @@ start-argocd:
 	--debug
 
 	sleep 5s
-	kubectl wait --for=condition=ready --timeout=500s pod -l app.kubernetes.io/name=argocd-server -n argocd --v=6
+	kubectl wait --for=condition=ready --timeout=600s pod -l app.kubernetes.io/name=argocd-server -n argocd --v=6
 
 # Iniciar e aplicar as configurações das aplicações
 start-apps:
-	kubectl create namespace postgre || true
-	kubectl create namespace postgresql || true
-	kubectl create namespace backend || true
-	kubectl create namespace kafka || true
+	kubectl create namespace postgre
+	kubectl create namespace postgresql
+	kubectl create namespace backend
+	kubectl create namespace kafka
 	kubectl apply -f infrastructure/app-of-apps/local/argo-cd.yaml
 	kubectl apply -f infrastructure/app-of-apps/apps/zookeeper.yaml
 	kubectl apply -f infrastructure/app-of-apps/apps/backend.yaml
@@ -36,13 +65,13 @@ start-apps:
 
 # Iniciar e configurar Prometheus e Grafana para monitoramento
 start-monitoring:
-	kubectl create namespace monitoring || true
+	kubectl create namespace monitoring
 	@if ! helm status prometheus -n monitoring > /dev/null 2>&1; then\
 		helm install prometheus prometheus-community/prometheus -f infrastructure/modules/prometheus/values.yaml --namespace monitoring;\
 	else\
 		echo "Prometheus already installed";\
 	fi
-	helm repo add grafana https://grafana.github.io/helm-charts || true
+	helm repo add grafana https://grafana.github.io/helm-charts
 	helm repo update
 	@if ! helm status grafana -n monitoring > /dev/null 2>&1; then\
 		helm install grafana grafana/grafana -f infrastructure/modules/grafana/values-secret.yaml --namespace monitoring;\
@@ -52,27 +81,27 @@ start-monitoring:
 
 	kubectl apply -f infrastructure/modules/prometheus/prometheus-server-pvc.yaml
 
-# Construir e enviar imagens Docker para os serviços
+	sleep 5s
+	kubectl wait --for=condition=ready --timeout=600s pod -l app.kubernetes.io/name=grafana -n monitoring --v=6
+
+# Construir imagens Docker para os serviços
 build-images:
 	@echo "Building Images"
 	docker build -t opaulosoares/postgre_uploader:latest services/etl/.
-	docker push opaulosoares/postgre_uploader:latest
 	docker build -t opaulosoares/dist_system_ui:latest services/ui/.
-	docker push opaulosoares/dist_system_ui:latest
 	docker build -t opaulosoares/dist_system_backend:latest services/backend/.
-	docker push opaulosoares/dist_system_backend:latest
 
 # Parar e deletar o cluster KIND
 stop-kind:
 	@echo "Stopping Kind..."
 	kind delete cluster --name cluster
 
-# Encaminhar portas para acessar o ArgoCD, Grafana, frontend, backend
+# Encaminhar portas para acessar o ArgoCD, Grafana
 forward-ports:
 	@echo "Forwarding Ports..."
 	-kubectl -n argocd port-forward svc/argo-cd-argocd-server 8080:443 &
 	-kubectl -n monitoring port-forward svc/grafana 8081:80
-
+	
 # Obter informações de acesso (senhas) para ArgoCD e Grafana
 get-info:
 	@echo "ArgoCD admin password:"
