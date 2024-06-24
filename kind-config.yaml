@@ -3,10 +3,11 @@ apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
     - role: control-plane
       extraPortMappings:
+          - containerPort: 30080
+            hostPort: 30080
+            protocol: TCP
           - containerPort: 30081
             hostPort: 30081
-          - containerPort: 30012
-            hostPort: 30012
             protocol: TCP
           - containerPort: 5012
             hostPort: 5012
