@@ -100,15 +100,18 @@ stop-kind:
 # Encaminhar portas para acessar o ArgoCD, Grafana
 forward-ports:
 	@echo "Forwarding Ports..."
-	-kubectl -n argocd port-forward svc/argo-cd-argocd-server 5012:443 &
-	-kubectl -n monitoring port-forward svc/grafana 6012:80
+	-kubectl -n argocd port-forward svc/argo-cd-argocd-server 30084:443 &
+	-kubectl -n monitoring port-forward svc/grafana 30083:80
 	
 # Obter informações de acesso (senhas) para ArgoCD e Grafana
 get-info:
+	@echo "----------------------"
 	@echo "ArgoCD admin password:"
-	kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode; echo
+	@kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode; echo
+	@echo "----------------------"
 	@echo "Grafana admin password:"
-	kubectl get secret --namespace monitoring grafana -o jsonpath="{.data.admin-password}" | base64 --decode; echo
+	@kubectl get secret --namespace monitoring grafana -o jsonpath="{.data.admin-password}" | base64 --decode; echo
+	@echo "----------------------"
 
 # Targets para iniciar e parar todo o sistema
 up: start-kind start-argocd start-apps start-monitoring get-info
