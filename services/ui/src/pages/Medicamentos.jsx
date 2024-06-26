@@ -103,7 +103,7 @@ const Medicamentos = () => {
     };
 
     const handleNextPage = () => {
-        setCurrentPage(currentPage + 1);
+        setCurrentPage(currentPage + 5);
     };
 
     return (
@@ -116,7 +116,7 @@ const Medicamentos = () => {
                 onDelete={handleDelete}
                 getId={(item) => item.id_medicamento}
             />
-            <div className="flex justify-end w-full px-16 py-8">
+            <div className="flex justify-end px-16">
                 <Button color="blue" onClick={handleNextPage}>
                     Carregar Mais
                 </Button>
