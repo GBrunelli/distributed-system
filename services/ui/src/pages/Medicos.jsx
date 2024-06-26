@@ -10,7 +10,7 @@ const Medicos = () => {
 
     useEffect(() => {
         axios
-            .get("http://localhost:30081/medicos")
+            .get("http://localhost:8081/medicos")
             .then((response) => {
                 setMedicos(response.data);
                 setLoading(false);
@@ -23,7 +23,7 @@ const Medicos = () => {
 
     const handleAdd = (newItem) => {
         axios
-            .post("http://localhost:30081/medicos", newItem)
+            .post("http://localhost:8081/medicos", newItem)
             .then((response) => {
                 setMedicos([...medicos, response.data]);
             })
@@ -34,7 +34,7 @@ const Medicos = () => {
 
     const handleEdit = (id, updatedItem) => {
         axios
-            .put(`http://localhost:30081/medicos/${id}`, updatedItem)
+            .put(`http://localhost:8081/medicos/${id}`, updatedItem)
             .then((response) => {
                 setMedicos(
                     medicos.map((item) =>
@@ -49,7 +49,7 @@ const Medicos = () => {
 
     const handleDelete = (id) => {
         axios
-            .delete(`http://localhost:30081/medicos/${id}`)
+            .delete(`http://localhost:8081/medicos/${id}`)
             .then(() => {
                 setMedicos(medicos.filter((item) => item.id_medico !== id));
             })

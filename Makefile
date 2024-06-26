@@ -21,11 +21,15 @@ build-frontend:
 	@echo "Building frontend project in $(NODE_UI_PROJECT_DIR)"
 	cd $(NODE_UI_PROJECT_DIR) && npm run build
 
-check-tools:
-	@which helm > /dev/null || { echo "Helm is not installed. Please install Helm."; exit 1; }
-	@which kubectl > /dev/null || { echo "kubectl is not installed. Please install kubectl."; exit 1; }
-	@which kind > /dev/null || { echo "kind is not installed. Please install kind."; exit 1; }
-	@which docker > /dev/null || {echo "docker is not installed. Please install docker." exit 1;}
+install-docker:
+	sudo apt-get update
+	sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+	sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+	sudo apt-get update
+	sudo apt-get install -y docker-ce
+	sudo usermod -aG docker ${USER}
+
 
 # Criar cluster KIND com a configuração especificada
 start-kind:
@@ -114,6 +118,7 @@ get-info:
 	@echo "----------------------"
 
 # Targets para iniciar e parar todo o sistema
+init: install-frontend-dependencies install-backend-dependencies
 up: start-kind start-argocd start-apps start-monitoring get-info
 down: stop-kind
 

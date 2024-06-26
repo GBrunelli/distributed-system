@@ -23,7 +23,7 @@ export default function () {
     };
 
     let medicoPostRes = http.post(
-        "http://localhost:30081/medicos",
+        "http://localhost:8081/medicos",
         JSON.stringify(medicoData),
         { headers: { "Content-Type": "application/json" } }
     );
@@ -40,7 +40,7 @@ export default function () {
         }
         if (medicoId) {
             let medicoDelRes = http.del(
-                `http://localhost:30081/medicos/${medicoId}`
+                `http://localhost:8081/medicos/${medicoId}`
             );
             check(medicoDelRes, { "status was 200": (r) => r.status == 200 }) ||
                 errorRate.add(1);
@@ -57,7 +57,7 @@ export default function () {
     };
 
     let pacientePostRes = http.post(
-        "http://localhost:30081/pacientes",
+        "http://localhost:8081/pacientes",
         JSON.stringify(pacienteData),
         { headers: { "Content-Type": "application/json" } }
     );
@@ -74,7 +74,7 @@ export default function () {
         }
         if (pacienteId) {
             let pacienteDelRes = http.del(
-                `http://localhost:30081/pacientes/${pacienteId}`
+                `http://localhost:8081/pacientes/${pacienteId}`
             );
             check(pacienteDelRes, {
                 "status was 200": (r) => r.status == 200,
@@ -104,7 +104,7 @@ export default function () {
     };
 
     let medicamentoPostRes = http.post(
-        "http://localhost:30081/medicamentos",
+        "http://localhost:8081/medicamentos",
         JSON.stringify(medicamentoData),
         { headers: { "Content-Type": "application/json" } }
     );
@@ -121,7 +121,7 @@ export default function () {
         }
         if (medicamentoId) {
             let medicamentoDelRes = http.del(
-                `http://localhost:30081/medicamentos/${medicamentoId}`
+                `http://localhost:8081/medicamentos/${medicamentoId}`
             );
             check(medicamentoDelRes, {
                 "status was 200": (r) => r.status == 200,
@@ -138,7 +138,7 @@ export default function () {
     };
 
     let pontoDistribuicaoPostRes = http.post(
-        "http://localhost:30081/pontos-distribuicao",
+        "http://localhost:8081/pontos-distribuicao",
         JSON.stringify(pontoDistribuicaoData),
         { headers: { "Content-Type": "application/json" } }
     );
@@ -162,7 +162,7 @@ export default function () {
         }
         if (pontoDistribuicaoId) {
             let pontoDistribuicaoDelRes = http.del(
-                `http://localhost:30081/pontosdistribuicao/${pontoDistribuicaoId}`
+                `http://localhost:8081/pontosdistribuicao/${pontoDistribuicaoId}`
             );
             check(pontoDistribuicaoDelRes, {
                 "status was 200": (r) => r.status == 200,

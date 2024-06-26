@@ -27,7 +27,13 @@ const sobrenomes = [
     "Martins",
 ];
 
-const tiposPonto = ["Farmácia", "Hospital", "Posto de Saúde", "Clínica", "Distribuidora"];
+const tiposPonto = [
+    "Farmácia",
+    "Hospital",
+    "Posto de Saúde",
+    "Clínica",
+    "Distribuidora",
+];
 
 const generateRandomName = () => {
     const nome = nomes[Math.floor(Math.random() * nomes.length)];
@@ -41,7 +47,7 @@ const generateMockData = async () => {
     const mockPontosDistribuicao = [];
 
     for (let i = 0; i < 20; i++) {
-        await axios.post("http://localhost:30081/pacientes", {
+        await axios.post("http://localhost:8081/pacientes", {
             nome: generateRandomName(),
             cpf: `${Math.floor(Math.random() * 1000000000000)}`,
             data_nascimento: new Date(1990 + i, 0, 1)
@@ -51,7 +57,7 @@ const generateMockData = async () => {
             telefone: `99999-999${i}`,
         });
 
-        await axios.post("http://localhost:30081/medicos", {
+        await axios.post("http://localhost:8081/medicos", {
             nome: `Dr. ${generateRandomName()}`,
             crm: `${Math.floor(Math.random() * 1000000)}`,
             especialidade: `Especialidade ${i % 5}`,
@@ -59,7 +65,7 @@ const generateMockData = async () => {
             email: `medico${i}@example.com`,
         });
 
-        await axios.post("http://localhost:30081/pontos-distribuicao", {
+        await axios.post("http://localhost:8081/pontos-distribuicao", {
             nome: `Ponto ${i}`,
             tipo: tiposPonto[i % tiposPonto.length],
             endereco: `Endereço ${i}`,
@@ -67,7 +73,9 @@ const generateMockData = async () => {
         });
     }
 
-    alert("Dados mock de pacientes, médicos e pontos de distribuição foram inseridos com sucesso!");
+    alert(
+        "Dados mock de pacientes, médicos e pontos de distribuição foram inseridos com sucesso!"
+    );
 };
 
 const Home = () => {

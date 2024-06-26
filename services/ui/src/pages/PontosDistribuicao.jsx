@@ -17,7 +17,7 @@ const PontosDistribuicao = () => {
 
     useEffect(() => {
         axios
-            .get("http://localhost:30081/pontos-distribuicao")
+            .get("http://localhost:8081/pontos-distribuicao")
             .then((response) => {
                 setPontosDistribuicao(response.data);
             })
@@ -28,7 +28,7 @@ const PontosDistribuicao = () => {
 
     const handleAdd = (newItem) => {
         axios
-            .post("http://localhost:30081/pontos-distribuicao", newItem)
+            .post("http://localhost:8081/pontos-distribuicao", newItem)
             .then((response) => {
                 setPontosDistribuicao([...pontosDistribuicao, response.data]);
             })
@@ -42,10 +42,7 @@ const PontosDistribuicao = () => {
 
     const handleEdit = (id, updatedItem) => {
         axios
-            .put(
-                `http://localhost:30081/pontos-distribuicao/${id}`,
-                updatedItem
-            )
+            .put(`http://localhost:8081/pontos-distribuicao/${id}`, updatedItem)
             .then((response) => {
                 setPontosDistribuicao(
                     pontosDistribuicao.map((item) =>
@@ -63,7 +60,7 @@ const PontosDistribuicao = () => {
 
     const handleDelete = (id) => {
         axios
-            .delete(`http://localhost:30081/pontos-distribuicao/${id}`)
+            .delete(`http://localhost:8081/pontos-distribuicao/${id}`)
             .then(() => {
                 setPontosDistribuicao(
                     pontosDistribuicao.filter((item) => item.id !== id)
