@@ -1,11 +1,20 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+    setPacientes,
+    addPaciente,
+    editPaciente,
+    deletePaciente,
+} from "../store";
 import TemplatePage from "./TemplatePage";
 import TemplateDataDisplay from "./TemplateDataDisplay";
 import { HiUserGroup } from "react-icons/hi";
 import axios from "axios";
 
 const Paciente = () => {
-    const [paciente, setPaciente] = useState([]);
+    const dispatch = useDispatch();
+    const pacientes = useSelector((state) => state.pacientes);
+    const [loading, setLoading] = useState(true);
 
     const fields = [
         { id: "id_paciente", label: "ID", type: "number" },
@@ -18,16 +27,18 @@ const Paciente = () => {
 
     useEffect(() => {
         fetchPacientes();
-    }, [paciente]);
+    }, []);
 
     const fetchPacientes = async () => {
         try {
             const response = await axios.get(
                 "http://localhost:30081/pacientes"
             );
-            setPaciente(response.data);
+            dispatch(setPacientes(response.data));
+            setLoading(false);
         } catch (error) {
             console.error("Erro ao buscar pacientes:", error);
+            setLoading(false);
         }
     };
 
@@ -37,7 +48,7 @@ const Paciente = () => {
                 "http://localhost:30081/pacientes",
                 newItem
             );
-            setPaciente([...paciente, response.data]);
+            dispatch(addPaciente(response.data));
         } catch (error) {
             console.error("Erro ao adicionar paciente:", error);
         }
@@ -49,11 +60,7 @@ const Paciente = () => {
                 `http://localhost:30081/pacientes/${id}`,
                 updatedItem
             );
-            setPaciente(
-                paciente.map((item) =>
-                    item.id === id ? { ...item, ...response.data } : item
-                )
-            );
+            dispatch(editPaciente(response.data));
         } catch (error) {
             console.error("Erro ao atualizar paciente:", error);
         }
@@ -62,26 +69,30 @@ const Paciente = () => {
     const handleDelete = async (id) => {
         try {
             await axios.delete(`http://localhost:30081/pacientes/${id}`);
-            setPaciente(paciente.filter((item) => item.id !== id));
+            dispatch(deletePaciente(id));
         } catch (error) {
             console.error("Erro ao deletar paciente:", error);
         }
     };
 
-    const sortedPacientes = paciente.sort(
+    const sortedPacientes = [...pacientes].sort(
         (a, b) => a.id_paciente - b.id_paciente
     );
 
     return (
         <TemplatePage title="Pacientes" icon={<HiUserGroup />}>
-            <TemplateDataDisplay
-                fields={fields}
-                data={sortedPacientes}
-                onAdd={handleAdd}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                getId={(item) => item.id_paciente}
-            />
+            {loading ? (
+                <div>Loading...</div>
+            ) : (
+                <TemplateDataDisplay
+                    fields={fields}
+                    data={sortedPacientes}
+                    onAdd={handleAdd}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    getId={(item) => item.id_paciente}
+                />
+            )}
         </TemplatePage>
     );
 };

@@ -1,11 +1,20 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import {
+    setPontosDistribuicao,
+    addPontoDistribuicao,
+    editPontoDistribuicao,
+    deletePontoDistribuicao,
+} from "../store";
 import TemplatePage from "./TemplatePage";
 import TemplateDataDisplay from "./TemplateDataDisplay";
 import { FaMapMarkedAlt } from "react-icons/fa";
+import axios from "axios";
 
 const PontosDistribuicao = () => {
-    const [pontosDistribuicao, setPontosDistribuicao] = useState([]);
+    const dispatch = useDispatch();
+    const pontosDistribuicao = useSelector((state) => state.pontosDistribuicao);
+    const [loading, setLoading] = useState(true);
 
     const fields = [
         { id: "id_ponto", label: "Ponto ID", type: "number" },
@@ -16,78 +25,75 @@ const PontosDistribuicao = () => {
     ];
 
     useEffect(() => {
-        axios
-            .get("http://localhost:30081/pontos-distribuicao")
-            .then((response) => {
-                setPontosDistribuicao(response.data);
-            })
-            .catch((error) => {
-                console.error("Erro ao buscar pontos de distribuição:", error);
-            });
-    }, [pontosDistribuicao]);
+        fetchPontosDistribuicao();
+    }, []);
 
-    const handleAdd = (newItem) => {
-        axios
-            .post("http://localhost:30081/pontos-distribuicao", newItem)
-            .then((response) => {
-                setPontosDistribuicao([...pontosDistribuicao, response.data]);
-            })
-            .catch((error) => {
-                console.error(
-                    "Erro ao adicionar ponto de distribuição:",
-                    error
-                );
-            });
+    const fetchPontosDistribuicao = async () => {
+        try {
+            const response = await axios.get(
+                "http://localhost:30081/pontos-distribuicao"
+            );
+            dispatch(setPontosDistribuicao(response.data));
+            setLoading(false);
+        } catch (error) {
+            console.error("Erro ao buscar pontos de distribuição:", error);
+            setLoading(false);
+        }
     };
 
-    const handleEdit = (id, updatedItem) => {
-        axios
-            .put(
+    const handleAdd = async (newItem) => {
+        try {
+            const response = await axios.post(
+                "http://localhost:30081/pontos-distribuicao",
+                newItem
+            );
+            dispatch(addPontoDistribuicao(response.data));
+        } catch (error) {
+            console.error("Erro ao adicionar ponto de distribuição:", error);
+        }
+    };
+
+    const handleEdit = async (id, updatedItem) => {
+        try {
+            const response = await axios.put(
                 `http://localhost:30081/pontos-distribuicao/${id}`,
                 updatedItem
-            )
-            .then((response) => {
-                setPontosDistribuicao(
-                    pontosDistribuicao.map((item) =>
-                        item.id === id ? response.data : item
-                    )
-                );
-            })
-            .catch((error) => {
-                console.error(
-                    "Erro ao atualizar ponto de distribuição:",
-                    error
-                );
-            });
+            );
+            dispatch(editPontoDistribuicao(response.data));
+        } catch (error) {
+            console.error("Erro ao atualizar ponto de distribuição:", error);
+        }
     };
 
-    const handleDelete = (id) => {
-        axios
-            .delete(`http://localhost:30081/pontos-distribuicao/${id}`)
-            .then(() => {
-                setPontosDistribuicao(
-                    pontosDistribuicao.filter((item) => item.id !== id)
-                );
-            })
-            .catch((error) => {
-                console.error("Erro ao deletar ponto de distribuição:", error);
-            });
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(
+                `http://localhost:30081/pontos-distribuicao/${id}`
+            );
+            dispatch(deletePontoDistribuicao(id));
+        } catch (error) {
+            console.error("Erro ao deletar ponto de distribuição:", error);
+        }
     };
 
-    const sortedPontos = pontosDistribuicao.sort(
+    const sortedPontos = [...pontosDistribuicao].sort(
         (a, b) => a.id_ponto - b.id_ponto
     );
 
     return (
         <TemplatePage title="Pontos de Distribuição" icon={<FaMapMarkedAlt />}>
-            <TemplateDataDisplay
-                fields={fields}
-                data={sortedPontos}
-                onAdd={handleAdd}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                getId={(item) => item.id_ponto}
-            />
+            {loading ? (
+                <div>Loading...</div>
+            ) : (
+                <TemplateDataDisplay
+                    fields={fields}
+                    data={sortedPontos}
+                    onAdd={handleAdd}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    getId={(item) => item.id_ponto}
+                />
+            )}
         </TemplatePage>
     );
 };

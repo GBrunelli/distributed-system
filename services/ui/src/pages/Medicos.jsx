@@ -1,31 +1,34 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { setMedicos, addMedico, editMedico, deleteMedico } from "../store";
 import TemplatePage from "./TemplatePage";
 import TemplateDataDisplay from "./TemplateDataDisplay";
 import { FaUserDoctor } from "react-icons/fa6";
 
 const Medicos = () => {
-    const [medicos, setMedicos] = useState([]);
+    const dispatch = useDispatch();
+    const medicos = useSelector((state) => state.medicos);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         axios
             .get("http://localhost:30081/medicos")
             .then((response) => {
-                setMedicos(response.data);
+                dispatch(setMedicos(response.data));
                 setLoading(false);
             })
             .catch((error) => {
                 console.error("Erro ao buscar médicos:", error);
                 setLoading(false);
             });
-    }, [medicos]);
+    }, [dispatch]);
 
     const handleAdd = (newItem) => {
         axios
             .post("http://localhost:30081/medicos", newItem)
             .then((response) => {
-                setMedicos([...medicos, response.data]);
+                dispatch(addMedico(response.data));
             })
             .catch((error) => {
                 console.error("Erro ao adicionar médico:", error);
@@ -36,11 +39,7 @@ const Medicos = () => {
         axios
             .put(`http://localhost:30081/medicos/${id}`, updatedItem)
             .then((response) => {
-                setMedicos(
-                    medicos.map((item) =>
-                        item.id_medico === id ? response.data : item
-                    )
-                );
+                dispatch(editMedico(response.data));
             })
             .catch((error) => {
                 console.error("Erro ao atualizar médico:", error);
@@ -51,7 +50,7 @@ const Medicos = () => {
         axios
             .delete(`http://localhost:30081/medicos/${id}`)
             .then(() => {
-                setMedicos(medicos.filter((item) => item.id_medico !== id));
+                dispatch(deleteMedico(id));
             })
             .catch((error) => {
                 console.error("Erro ao deletar médico:", error);
@@ -67,7 +66,9 @@ const Medicos = () => {
         { id: "email", label: "Email", type: "email" },
     ];
 
-    const sortedMedicos = medicos.sort((a, b) => a.id_medico - b.id_medico);
+    const sortedMedicos = [...medicos].sort(
+        (a, b) => a.id_medico - b.id_medico
+    );
 
     return (
         <TemplatePage title="Médicos" icon={<FaUserDoctor />}>

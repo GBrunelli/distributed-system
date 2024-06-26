@@ -53,6 +53,11 @@ const TemplateDataDisplay = ({
         }
     };
 
+    useEffect(() => {
+        // Reset the current page when the search term changes
+        setCurrentPage(1);
+    }, [searchTerm]);
+
     const filteredData = data
         .filter((item) => item !== null && item !== undefined) // Filtra os valores null e undefined
         .filter((item) =>

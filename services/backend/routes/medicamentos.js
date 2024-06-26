@@ -4,8 +4,14 @@ module.exports = (pgClient, producer) => {
     const router = express.Router();
 
     router.get("/", async (req, res) => {
+        const limit = parseInt(req.query.limit) || 5;
+        const offset = parseInt(req.query.offset) || 0;
+
         try {
-            const result = await pgClient.query("SELECT * FROM medicamento");
+            const result = await pgClient.query(
+                "SELECT * FROM medicamento ORDER BY id_medicamento LIMIT $1 OFFSET $2",
+                [limit, offset]
+            );
             res.json(result.rows);
         } catch (err) {
             console.error(err);

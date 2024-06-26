@@ -2,6 +2,22 @@
 
 Instruções e considerações sobre nosso projeto para a disciplina de Sistemas Distribuídos SSC-0904. Em caso de quaisquer dúvidas entre em contato com `paulosoares@usp.br`.
 
+## Observação Importante
+
+A versão que está na VM já foi iniciada. Para acessar o frontend, basta usar o comando:
+
+```sh
+ssh -L 30080:localhost:30080 gsdgrad02@andromeda.lasdpc.icmc.usp.br -p 2112
+```
+
+Para acessar o ArgoCD e o Grafana, faça o comando sudo make get-info para saber as senhas do admin de cada plataforma. Depois, faça o comando sudo make forward-ports, abra outro terminal e faça o comando:
+
+```sh
+ssh -L porta:localhost:porta gsdgrad02@andromeda.lasdpc.icmc.usp.br -p 2112
+```
+
+Substituindo "porta" por 30083 para o Grafana e 30084 para o ArgoCD.
+
 ## (<span style="color:red">Importante</span>) Considerações sobre os recursos computacionais
 
 Antes de começar a explicar sobre o _setup_ do projeto, achamos extremamente relevante pontuar o seguinte:
