@@ -138,7 +138,7 @@ ssh -L porta:localhost:porta gsdgrad02@andromeda.lasdpc.icmc.usp.br -p 2112
 
 1. Rodar `sudo make init` para instalar dependências, fazer _build_.
 2. Rodar `sudo make up` para iniciar o _kubernetes_ e outros.
-3. Pegar senha do ArgoCD e Grafana com o comando `sudo make get-info`.
+3. Pegar senha do ArgoCD e Grafana com o comando `sudo make get-info`. Note que no ArgoCD, para alguns navegadores, pode dar o erro "Your connection is not private", basta clicar em "Avançado/Advanced" e "Continuar/proceed to localhost". Faça o login normalmente com o usuário "admin".
 4. Abrir o ArgoCD para monitorar o processo do ETL, se estiver pronto, rodar o comando `kubectl rollout restart deployment backend-deployment -n backend` para reiniciar o backend e conectá-lo de maneira correta com o PostgreSQL.
 5. Para tornar as interfaces gráficas do ArgoCD e Grafana acessíveis pelas portas 30083 e 30084: `sudo make forward-ports`
 6. Para acessar a VM, escolha a porta do que quer acessar e use o comando
