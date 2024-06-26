@@ -118,7 +118,7 @@ get-info:
 	@echo "----------------------"
 
 # Targets para iniciar e parar todo o sistema
-init: install-frontend-dependencies install-backend-dependencies
+init: install-frontend-dependencies install-backend-dependencies build-frontend build-images
 up: start-kind start-argocd start-apps start-monitoring get-info
 down: stop-kind
 

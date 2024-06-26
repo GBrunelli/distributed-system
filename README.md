@@ -2,15 +2,22 @@
 
 Instruções e considerações sobre nosso projeto para a disciplina de Sistemas Distribuídos SSC-0904.
 
-## (Importante) Considerações sobre os recursos computacionais
+## (<span style="color:red">Importante</span>) Considerações sobre os recursos computacionais
 
 Antes de começar a explicar sobre o _setup_ do projeto, achamos extremamente relevante pontuar o seguinte:
 
 O nosso projeto foi feito com tecnologias como _kubernetes_ e _kind_ (_kubernetes in docker_) para sua elaboração. Porém, isso possui um custo computacional embutido.
 
-Implementamos um projeto que foi testado diversas vezes em um computador com mais recurso do que a máquina virtual dada pela disciplina e não tivemos nenhum tipo de problema com serviços caindo. Por isso não implementamos rotinas de verificação para reiniciá-los no caso de falta de recurso computacional.
+Implementamos um projeto que foi testado diversas vezes em um computador com mais recurso do que a máquina virtual dada pela disciplina e não tivemos nenhum tipo de problema com serviços caindo. **Por isso não implementamos rotinas de verificação para reiniciá-los no caso de falta de recurso computacional.**
 
-Assim, como o recurso é compartilhado entre os grupos, é possível de um serviço nosso cair e não ser reinicializado e assim, comprometer o funcionamento da aplicação como um todo. Logo, é possível que a versão que está no cluster não esteja funcionando. Mas caso a instalação seja feita novamente, de maneira que siga exatamente o que está nesse documento, o aplicativo roda assim como rodou na apresentação do dia 24/06/2024, como mostrado ao professor.
+Assim, como o **recurso é compartilhado** entre os grupos, **é possível de um serviço nosso cair** e não ser reinicializado. Assim, o funcionamento da aplicação como um todo é comprometido. **<span style="color:red">Portanto, é possível que a versão que está no cluster não esteja funcionando.</span>**
+
+Mas, caso a instalação seja feita novamente, de maneira que siga exatamente o que está nesse documento, o aplicativo roda assim como rodou na apresentação do dia 24/06/2024, como mostrado ao professor.
+
+Vale ressaltar que mesmo com a expansão da memória da máquina virtual para 4GB (dada pelo professor após a apresentação), serviços como o Kafka falharam por falta de CPU, como pode ser visto na imagem a seguir, capturada no ArgoCD, que integramos no nosso projeto.
+
+![Foto do serviço kafka](https://i.ibb.co/z7556gK/photo-2024-06-25-20-32-59.jpg)
+Lê-se, em inglês, o erro: "_0/1 nodes are available. 1 Insufficient cpu..._"
 
 ## 1. Como iniciar o projeto
 
@@ -66,6 +73,10 @@ sudo make build-images
 sudo make up
 ```
 
-4. Caso qualquer problema aconteça
+#### Caso qualquer problema aconteça/queira finalizar a aplicação
 
-Na aplicação nós utilizamos o gerenciador de pacotes para _Kubernetes_ chamado _helm_. Ele depende de acesso a internet e da disponibilidade dos servidores que oferecem os pacotes. Caso qualquer problema aconteça por problemas de rede, o comando a seguir deve ser executado, seguido pelo comando `sudo make up` para reiniciar o processo de _deploy_.
+```sh
+sudo make down
+```
+
+Na aplicação, nós utilizamos o gerenciador de pacotes para _Kubernetes_ chamado _helm_. Ele depende de acesso a internet e da disponibilidade dos servidores que oferecem os pacotes. Caso qualquer problema aconteça por problemas de rede, o comando acima deve ser executado, seguido pelo comando `sudo make up` para reiniciar o processo de _deploy_.
