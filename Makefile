@@ -89,12 +89,20 @@ start-monitoring:
 	kubectl wait --for=condition=ready --timeout=600s pod -l app.kubernetes.io/name=grafana -n monitoring --v=6
 
 # Construir imagens Docker para os serviços
-# docker push opaulosoares/dist_system_ui:latest 
 build-images:
 	@echo "Building Images"
 	docker build -t opaulosoares/postgre_uploader:latest services/etl/.
 	docker build -t opaulosoares/dist_system_ui:latest services/ui/.
 	docker build -t opaulosoares/dist_system_backend:latest services/backend/.
+
+build-dev-images:
+	@echo "Building DEV Images"
+	docker build -t opaulosoares/postgre_uploader:latest services/etl/.
+	docker push opaulosoares/postgre_uploader:latest
+	docker build -t opaulosoares/dist_system_ui:latest services/ui/.
+	docker push opaulosoares/dist_system_ui:latest
+	docker build -t opaulosoares/dist_system_backend:latest services/backend/.
+	docker push opaulosoares/dist_system_backend:latest
 
 # Parar e deletar o cluster KIND
 stop-kind:
