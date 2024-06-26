@@ -125,6 +125,9 @@ get-info:
 	@kubectl get secret --namespace monitoring grafana -o jsonpath="{.data.admin-password}" | base64 --decode; echo
 	@echo "----------------------"
 
+restart-backend:
+	kubectl rollout restart deployment backend-deployment -n backend
+
 # Targets para iniciar e parar todo o sistema
 init: install-frontend-dependencies install-backend-dependencies build-frontend build-images
 up: start-kind start-argocd start-apps start-monitoring get-info
