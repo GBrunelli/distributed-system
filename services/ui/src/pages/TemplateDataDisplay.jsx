@@ -53,14 +53,19 @@ const TemplateDataDisplay = ({
         }
     };
 
-    const filteredData = data.filter((item) =>
-        fields.some((field) =>
-            item[field.id]
-                .toString()
-                .toLowerCase()
-                .includes(searchTerm.toLowerCase())
-        )
-    );
+    const filteredData = data
+        .filter((item) => item !== null && item !== undefined) // Filtra os valores null e undefined
+        .filter((item) =>
+            fields.some(
+                (field) =>
+                    item[field.id] !== null &&
+                    item[field.id] !== undefined && // Verifica se o campo não é null ou undefined
+                    item[field.id]
+                        .toString()
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase())
+            )
+        );
 
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
     const paginatedData = filteredData.slice(

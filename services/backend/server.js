@@ -31,7 +31,7 @@ pgClient
 
 const kafka = new Kafka({
     clientId: "my-app",
-    brokers: ["kafka.kafka.svc.cluster.local:9093"],
+    brokers: ["kafka.kafka.svc.cluster.local:9092"],
     ssl: false,
     sasl: {
         mechanism: "plain",
@@ -52,10 +52,6 @@ const consumer = kafka.consumer({ groupId: "my-group" });
 const runKafka = async () => {
     try {
         await consumer.connect();
-        // await consumer.subscribe({
-        //     topic: "fila-requisicoes",
-        //     fromBeginning: true,
-        // });
 
         await consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
