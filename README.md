@@ -80,3 +80,55 @@ sudo make down
 ```
 
 Na aplicação, nós utilizamos o gerenciador de pacotes para _Kubernetes_ chamado _helm_. Ele depende de acesso a internet e da disponibilidade dos servidores que oferecem os pacotes. Caso qualquer problema aconteça por problemas de rede, o comando acima deve ser executado, seguido pelo comando `sudo make up` para reiniciar o processo de _deploy_.
+
+### Antes de tentar acessar a aplicação
+
+Por conta de falta de tempo, não conseguimos implementar uma rotina que faça a espera do ETL acabar o processamento para o _backend_ iniciar, pedimos que seja feita a reinicialização do _backend_ por meio do comando, caso ele esteja "_healthy_":
+
+![etl pronto](https://i.ibb.co/FsxrN20/photo-2024-06-26-10-06-39.jpg)
+
+```sh
+kubectl rollout restart deployment backend-deployment -n backend
+```
+
+O _status_ do _backend_ pode ser conferido pelo ArgoCD. Para acessá-lo, assim como o resto da aplicação, siga as instruções abaixo.
+
+### Para acessar a aplicação e serviços na máquina virtual da disciplina
+
+Aqui estão as portas para cada serviço:
+
+-   `frontend`: 30080
+-   `backend`: 30081
+-   `grafana`: 30083
+-   `argocd`: 30084
+
+Os serviços do `grafana` e `argocd` estarão _online_ mas precisam do comando `sudo make forward-ports` para terem sua interface gráfica acessível.
+
+Ambos serviços possuem _login_ e o usuário é _admin_.
+
+Para acessar as senhas, basta executar o comando:
+
+```sh
+sudo make get-info
+```
+
+Para acessar por ssh, substitua `porta` pela porta desejada:
+
+```sh
+ssh -L porta:localhost:porta gsdgrad02@andromeda.lasdpc.icmc.usp.br -p 2112
+```
+
+### Resumindo tudo
+
+1. Rodar `sudo make init` para instalar dependências, fazer _build_.
+2. Rodar `sudo make up` para iniciar o _kubernetes_ e outros.
+3. Pegar senha do ArgoCD e Grafana com o comando `sudo make get-info`.
+4. Abrir o ArgoCD para monitorar o processo do ETL, se estiver pronto, rodar o comando `kubectl rollout restart deployment backend-deployment -n backend` para reiniciar o backend e conectá-lo de maneira correta com o PostgreSQL.
+5. Para tornar as interfaces gráficas do ArgoCD e Grafana acessíveis pelas portas 30083 e 30084: `sudo make forward-ports`
+6. Para acessar a VM, escolha a porta do que quer acessar e use o comando
+
+```sh
+   ssh -L porta:localhost:porta gsdgrad02@andromeda.lasdpc.icmc.usp.br -p 2112
+```
+
+Caso tenha algum problema ou dúvida, entre em contato com o membro Paulo Soares (paulosoares@usp.br).
