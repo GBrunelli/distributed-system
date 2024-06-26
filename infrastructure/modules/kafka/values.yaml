@@ -1,26 +1,35 @@
+replicaCount: 1
+
+image:
+    repository: wurstmeister/kafka
+    tag: "2.12-2.3.0"
+    pullPolicy: IfNotPresent
+
+service:
+    type: ClusterIP
+    port: 9092
+
+persistence:
+    enabled: false
+    storageClass: ""
+    accessModes:
+        - ReadWriteOnce
+    size: 8Gi
+
 config:
     kafka:
-        KAFKA_LISTENERS: PLAINTEXT://:9092,SASL_PLAINTEXT://:9093
-        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka.kafka.svc.cluster.local:9092,SASL_PLAINTEXT://kafka.kafka.svc.cluster.local:9093
-        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,SASL_PLAINTEXT:SASL_PLAINTEXT
-        KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
-        KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
-        KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/kafka_server_jaas.conf
-
-    extraVolumes:
-        - name: kafka-server-jaas
-          configMap:
-              name: kafka-server-jaas
-
-    extraVolumeMounts:
-        - name: kafka-server-jaas
-          mountPath: /etc/kafka/kafka_server_jaas.conf
-          subPath: kafka_server_jaas.conf
+        ZOOKEEPER_CONNECT: "zookeeper.kafka.svc.cluster.local:2181"
+        KAFKA_LISTENERS: PLAINTEXT://:9092
+        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+        KAFKA_LOG_RETENTION_HOURS: 168
+        KAFKA_MESSAGE_MAX_BYTES: 1000012
+    zookeeper:
+        ZOO_PORT: 2181
 
 resources:
     requests:
         memory: "1Gi"
         cpu: "500m"
     limits:
-        memory: "2Gi"
+        memory: "1Gi"
         cpu: "1"

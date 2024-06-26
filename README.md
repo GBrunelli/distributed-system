@@ -1,6 +1,6 @@
 # MedTrack
 
-Instruções e considerações sobre nosso projeto para a disciplina de Sistemas Distribuídos SSC-0904.
+Instruções e considerações sobre nosso projeto para a disciplina de Sistemas Distribuídos SSC-0904. Em caso de quaisquer dúvidas entre em contato com `paulosoares@usp.br`.
 
 ## (<span style="color:red">Importante</span>) Considerações sobre os recursos computacionais
 
@@ -118,7 +118,7 @@ Para acessar por ssh, substitua `porta` pela porta desejada:
 ssh -L porta:localhost:porta gsdgrad02@andromeda.lasdpc.icmc.usp.br -p 2112
 ```
 
-### Resumindo tudo
+### Resumindo tudo (rodando do zero)
 
 1. Rodar `sudo make init` para instalar dependências, fazer _build_.
 2. Rodar `sudo make up` para iniciar o _kubernetes_ e outros.
@@ -126,6 +126,8 @@ ssh -L porta:localhost:porta gsdgrad02@andromeda.lasdpc.icmc.usp.br -p 2112
 4. Abrir o ArgoCD para monitorar o processo do ETL, se estiver pronto, rodar o comando `kubectl rollout restart deployment backend-deployment -n backend` para reiniciar o backend e conectá-lo de maneira correta com o PostgreSQL.
 5. Para tornar as interfaces gráficas do ArgoCD e Grafana acessíveis pelas portas 30083 e 30084: `sudo make forward-ports`
 6. Para acessar a VM, escolha a porta do que quer acessar e use o comando
+
+### Para rodar na VM
 
 ```sh
    ssh -L porta:localhost:porta gsdgrad02@andromeda.lasdpc.icmc.usp.br -p 2112
