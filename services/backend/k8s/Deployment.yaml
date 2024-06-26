@@ -12,20 +12,6 @@ spec:
             labels:
                 app: backend
         spec:
-            initContainers:
-                - name: wait-for-etl
-                  image: busybox:latest
-                  command:
-                      - /bin/sh
-                      - -c
-                      - |
-                          echo "Checking ETL service availability..."
-                          until nc -z -v -w30 etl.etl.svc.cluster.local 5432
-                          do
-                            echo "Waiting for ETL service to be available..."
-                            sleep 5
-                          done
-                          echo "ETL service is available."
             containers:
                 - name: backend
                   image: opaulosoares/dist_system_backend:latest
