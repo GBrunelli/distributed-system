@@ -16,3 +16,11 @@ config:
         - name: kafka-server-jaas
           mountPath: /etc/kafka/kafka_server_jaas.conf
           subPath: kafka_server_jaas.conf
+
+resources:
+    requests:
+        memory: "4Gi"
+        cpu: "2"
+    limits:
+        memory: "4Gi"
+        cpu: "2"
