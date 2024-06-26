@@ -10,7 +10,7 @@ const Medicamentos = () => {
     useEffect(() => {
         // Fetch medicamentos data from backend
         axios
-            .get("http://localhost:8081/medicamentos")
+            .get("http://localhost:30081/medicamentos")
             .then((response) => {
                 setMedicamentos(response.data);
             })
@@ -34,7 +34,7 @@ const Medicamentos = () => {
 
     const handleAdd = (newItem) => {
         axios
-            .post("http://localhost:8081/medicamentos", newItem)
+            .post("http://localhost:30081/medicamentos", newItem)
             .then((response) => {
                 setMedicamentos([...medicamentos, response.data]);
             })
@@ -45,7 +45,7 @@ const Medicamentos = () => {
 
     const handleEdit = (id, updatedItem) => {
         axios
-            .put(`http://localhost:8081/medicamentos/${id}`, updatedItem)
+            .put(`http://localhost:30081/medicamentos/${id}`, updatedItem)
             .then((response) => {
                 setMedicamentos(
                     medicamentos.map((item) =>
@@ -60,7 +60,7 @@ const Medicamentos = () => {
 
     const handleDelete = (id) => {
         axios
-            .delete(`http://localhost:8081/medicamentos/${id}`)
+            .delete(`http://localhost:30081/medicamentos/${id}`)
             .then(() => {
                 setMedicamentos(medicamentos.filter((item) => item.id !== id));
             })

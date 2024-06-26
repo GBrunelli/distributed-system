@@ -9,18 +9,6 @@ nodes:
           - containerPort: 30081
             hostPort: 30081
             protocol: TCP
-          - containerPort: 8081
-            hostPort: 8081
-            protocol: TCP
-          - containerPort: 5012
-            hostPort: 5012
-            protocol: TCP
-          - containerPort: 6012
-            hostPort: 6012
-            protocol: TCP
-          - containerPort: 7012
-            hostPort: 7012
-            protocol: TCP
     #   kubeadmConfigPatches:
     #       - |
     #           kind: InitConfiguration

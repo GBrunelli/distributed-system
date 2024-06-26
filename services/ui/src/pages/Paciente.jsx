@@ -22,7 +22,9 @@ const Paciente = () => {
 
     const fetchPacientes = async () => {
         try {
-            const response = await axios.get("http://localhost:8081/pacientes");
+            const response = await axios.get(
+                "http://localhost:30081/pacientes"
+            );
             setPaciente(response.data);
         } catch (error) {
             console.error("Erro ao buscar pacientes:", error);
@@ -32,7 +34,7 @@ const Paciente = () => {
     const handleAdd = async (newItem) => {
         try {
             const response = await axios.post(
-                "http://localhost:8081/pacientes",
+                "http://localhost:30081/pacientes",
                 newItem
             );
             setPaciente([...paciente, response.data]);
@@ -44,7 +46,7 @@ const Paciente = () => {
     const handleEdit = async (id, updatedItem) => {
         try {
             const response = await axios.put(
-                `http://localhost:8081/pacientes/${id}`,
+                `http://localhost:30081/pacientes/${id}`,
                 updatedItem
             );
             setPaciente(
@@ -59,7 +61,7 @@ const Paciente = () => {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`http://localhost:8081/pacientes/${id}`);
+            await axios.delete(`http://localhost:30081/pacientes/${id}`);
             setPaciente(paciente.filter((item) => item.id !== id));
         } catch (error) {
             console.error("Erro ao deletar paciente:", error);
