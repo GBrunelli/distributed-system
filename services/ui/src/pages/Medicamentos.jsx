@@ -22,12 +22,13 @@ const Medicamentos = () => {
     const fields = [
         { id: "nome", label: "Nome", type: "text" },
         { id: "descricao", label: "Descrição", type: "text" },
-        { id: "fabricante", label: "Fabricante", type: "text" },
         {
-            id: "data_registro_anvisa",
-            label: "Data de Registro ANVISA",
-            type: "date",
+            id: "restricao_hospitalar",
+            label: "Restricão Hospitalar",
+            type: "text",
         },
+        { id: "preco_minimo", label: "Preco Mínimo", type: "text" },
+        { id: "preco_maximo", label: "Preço Máximo", type: "text" },
         { id: "codigo_anvisa", label: "Código ANVISA", type: "text" },
         // Adicione outros campos conforme necessário
     ];
@@ -69,11 +70,22 @@ const Medicamentos = () => {
             });
     };
 
+    const sortedMedicamentos = medicamentos
+        .sort((a, b) => a.id_medicamento - b.id_medicamento)
+        .map((item) => ({
+            ...item,
+            preco_minimo: `R$${parseFloat(item.preco_minimo).toFixed(2)}`,
+            preco_maximo: `R$${parseFloat(item.preco_maximo).toFixed(2)}`,
+            restricao_hospitalar: `${
+                item.restricao_hospitalar === "Não" ? "❌ Não" : "✅ Sim"
+            }`,
+        }));
+
     return (
         <TemplatePage title="Medicamentos" icon={<LuPill />}>
             <TemplateDataDisplay
                 fields={fields}
-                data={medicamentos}
+                data={sortedMedicamentos}
                 onAdd={handleAdd}
                 onEdit={handleEdit}
                 onDelete={handleDelete}

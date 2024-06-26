@@ -68,11 +68,15 @@ const Paciente = () => {
         }
     };
 
+    const sortedPacientes = paciente.sort(
+        (a, b) => a.id_paciente - b.id_paciente
+    );
+
     return (
         <TemplatePage title="Pacientes" icon={<HiUserGroup />}>
             <TemplateDataDisplay
                 fields={fields}
-                data={paciente}
+                data={sortedPacientes}
                 onAdd={handleAdd}
                 onEdit={handleEdit}
                 onDelete={handleDelete}

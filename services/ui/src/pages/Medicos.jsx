@@ -67,6 +67,8 @@ const Medicos = () => {
         { id: "email", label: "Email", type: "email" },
     ];
 
+    const sortedMedicos = medicos.sort((a, b) => a.id_medico - b.id_medico);
+
     return (
         <TemplatePage title="Médicos" icon={<FaUserDoctor />}>
             {loading ? (
@@ -74,7 +76,7 @@ const Medicos = () => {
             ) : (
                 <TemplateDataDisplay
                     fields={fields}
-                    data={medicos}
+                    data={sortedMedicos}
                     onAdd={handleAdd}
                     onEdit={handleEdit}
                     onDelete={handleDelete}

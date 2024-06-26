@@ -74,11 +74,15 @@ const PontosDistribuicao = () => {
             });
     };
 
+    const sortedPontos = pontosDistribuicao.sort(
+        (a, b) => a.id_ponto - b.id_ponto
+    );
+
     return (
         <TemplatePage title="Pontos de Distribuição" icon={<FaMapMarkedAlt />}>
             <TemplateDataDisplay
                 fields={fields}
-                data={pontosDistribuicao}
+                data={sortedPontos}
                 onAdd={handleAdd}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
